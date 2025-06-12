@@ -1,0 +1,29 @@
+yfinance==0.2.62
+pandas==2.2.2
+numpy==1.26.4  # keep NumPy <2 to avoid binary-wheel incompatibilities
+# stable-baselines3 2.5+ fixes VecEnv.reset and requires torch ≥2.3
+stable-baselines3==2.5.0
+# ---------- PyTorch GPU build (CUDA 12.1) ----------
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.3.0+cu121
+torchvision==0.18.0+cu121
+torchaudio==2.3.0+cu121
+# ----------------------------------------------------
+
+# If you need a CPU-only build instead, comment-out the 4 lines above and
+# uncomment the generic constraint below.
+# torch>=2.3,<3.0
+scikit-learn==1.5.0
+optuna==3.6.1
+PyYAML==6.0.1
+tensorboard==2.16.2
+gymnasium==0.29.1
+
+# CUDA wheel index and specify GPU torch packages; keep cpu fallback commented. 
+
+# ------------ added for statistical tests & plotting -------------
+scipy==1.12.0
+statsmodels==0.14.1
+arch==7.2.0
+matplotlib==3.8.4
+seaborn==0.13.2 

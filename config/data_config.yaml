@@ -1,0 +1,96 @@
+paths:
+  option_data_zip_dir: D:/Single-Equity Option Prices 2004_2021/
+  output_dir: ../data_processed/
+  drl_state_file: ../data_processed/spx_iv_drl_state.csv
+settings:
+  start_date: '2004-01-02'
+  end_date: '2021-04-09'
+  fred_api_key: 6c2538acb27537ccd1c7fdcd0f46ff63
+features:
+  all_feature_cols:
+  - Close
+  - Volume
+  - log_return
+  - garman_klass_rv
+  - parkinson_rv
+  - amihud_illiq
+  - garman_klass_rv_5d
+  - parkinson_rv_5d
+  - amihud_illiq_5d_mean
+  - garman_klass_rv_21d
+  - parkinson_rv_21d
+  - amihud_illiq_21d_mean
+  - atm_iv_90d
+  - term_structure_slope
+  - skew_30d
+  - avg_bid_ask_spread_pct
+  - atm_iv_30d_lag_1
+  - atm_iv_30d_lag_2
+  - atm_iv_30d_lag_3
+  - atm_iv_30d_lag_4
+  - atm_iv_30d_lag_5
+  - atm_iv_30d_change_1d
+  - iv_fpca1
+  - iv_fpca2
+  - iv_fpca3
+  - VIXCLS
+  - DGS10
+  - DGS3MO
+  - vol_of_vol
+  - VIX_daily_change
+  - term_spread_10y_3m
+  - rv_22d
+  - realised_skew_22d
+  - realised_kurt_22d
+  - realised_quarticity_22d
+  - jump_flag
+  - credit_spread_baa_aaa
+  - VIX_MOVE_ratio
+  - vix_ts_slope
+  - STLFSI2
+  - USEPUINDXD
+  categorical_cols:
+  - day_of_week
+  - month
+  target_col: atm_iv_30d
+
+# Feature blocks for ablation (added)
+feature_blocks:
+  surface:
+    - atm_iv_30d
+    - atm_iv_90d
+    - term_structure_slope
+    - skew_30d
+    - avg_bid_ask_spread_pct
+    - iv_fpca1
+    - iv_fpca2
+    - iv_fpca3
+  realised:
+    - log_return
+    - garman_klass_rv
+    - parkinson_rv
+    - garman_klass_rv_5d
+    - parkinson_rv_5d
+    - garman_klass_rv_21d
+    - parkinson_rv_21d
+    - amihud_illiq
+    - amihud_illiq_5d_mean
+    - amihud_illiq_21d_mean
+    - rv_22d
+    - realised_skew_22d
+    - realised_kurt_22d
+    - realised_quarticity_22d
+    - jump_flag
+    - credit_spread_baa_aaa
+  macro:
+    - VIXCLS
+    - VIX_daily_change
+    - vol_of_vol
+    - DGS10
+    - DGS3MO
+    - term_spread_10y_3m
+    - credit_spread_baa_aaa
+    - VIX_MOVE_ratio
+    - vix_ts_slope
+    - STLFSI2
+    - USEPUINDXD
