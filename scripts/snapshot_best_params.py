@@ -8,13 +8,13 @@ from pathlib import Path
 import shutil
 import yaml
 
-from econ499.utils import load_config
+from iv_drl.utils import load_config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 CONFIG = load_config("data_config.yaml")
 
 ROOT = Path(__file__).resolve().parents[1]
-CFG = yaml.safe_load(open(ROOT / 'data_config.yaml'))
+CFG = yaml.safe_load(open(ROOT / 'config/data_config.yaml'))
 DATA_DIR = Path(CFG['paths']['output_dir']).resolve()
 CONF_DIR = ROOT / 'configs'
 CONF_DIR.mkdir(exist_ok=True)

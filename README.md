@@ -1,6 +1,7 @@
 # A Deep Reinforcement Learning Approach to S&P 500 Implied Volatility Surface Forecasting
 
 This repository implements a deep reinforcement learning framework for forecasting the S&P 500 implied volatility surface. The framework uses policy-gradient agents (PPO, A2C) to predict one-day-ahead ATM implied volatility while maintaining static arbitrage constraints.
+All source code is contained in the ``iv_drl`` package.
 
 ## Motivation and Literature Review
 
@@ -106,27 +107,27 @@ The data processing pipeline consists of the following scripts that must be run 
 
 ```powershell
 # 1. Feature Building
-python -m econ499.feats.build_price
-python scripts/process_option_data.py
-python -m econ499.feats.build_iv_surface
-python -m econ499.feats.build_iv_fpca
-python -m econ499.feats.fetch_macro
-python -m econ499.feats.merge_feats
+python -m iv_drl.feats.build_price
+python scripts/extract_option_data.py
+python -m iv_drl.feats.build_iv_surface
+python -m iv_drl.feats.build_iv_fpca
+python -m iv_drl.feats.fetch_macro
+python -m iv_drl.feats.merge_feats
 
 # 2. Hyperparameter Optimization
-python -m econ499.hpo.hpo_lstm --trials 30
-python -m econ499.hpo.hpo_ppo --n-trials 30
-python -m econ499.hpo.hpo_a2c --n-trials 30
+python -m iv_drl.hpo.hpo_lstm --trials 30
+python -m iv_drl.hpo.hpo_ppo --n-trials 30
+python -m iv_drl.hpo.hpo_a2c --n-trials 30
 
 # 3. Model Training
-python -m econ499.baselines.lstm
-python -m econ499.models.ppo --timesteps 100000
-python -m econ499.models.a2c --timesteps 100000
+python -m iv_drl.baselines.lstm
+python -m iv_drl.models.ppo --timesteps 100000
+python -m iv_drl.models.a2c --timesteps 100000
 
 # 4. Evaluation
-python -m econ499.eval.evaluate_all
-python -m econ499.baselines.har_rv
-python -m econ499.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.1
+python -m iv_drl.eval.evaluate_all
+python -m iv_drl.baselines.har_rv
+python -m iv_drl.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.1
 ```
 
 Note: Each script must be run in the order shown above to ensure all dependencies are available. Each script will save its outputs to the appropriate directories.
@@ -160,7 +161,7 @@ python -m iv_drl.eval.eval_alt_splits
 
 ## Directory Structure
 ```
-econ499/
+iv_drl/
 ├── models/           # DRL agent implementations
 ├── baselines/        # Baseline models
 ├── feats/            # Feature engineering scripts
@@ -170,9 +171,8 @@ econ499/
 ├── utils/            # Helper functions
 ├── data/             # Data processing scripts
 ├── results/          # All results, metrics, and figures
-├── cfg/              # Configuration files
+├── config/           # Configuration files
 ├── manuscript/       # Paper and figures
-└── dev/              # Experimental/sandbox code
 ```
 
 ## Results
