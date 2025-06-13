@@ -20,7 +20,7 @@ import pandas as pd
 # Lazy import of algo classes for loading
 from stable_baselines3 import PPO, A2C
 
-from iv_drl.utils.train_utils import (
+from econ499.utils.train_utils import (
     load_and_split_data,
     scale_features,
     create_envs,

@@ -7,12 +7,12 @@ from pathlib import Path
 import pandas as pd
 import pandas_datareader.data as web
 import yfinance as yf
+import numpy as np
 
-from iv_drl.utils import load_config
+from econ499.utils import load_config
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 CONFIG = load_config("data_config.yaml")
-
 
 ADDITIONAL_FRED_SERIES = {
     "TEDRATE": "TEDRATE",
@@ -27,7 +27,7 @@ YF_EXTRA_TICKERS = {
     "MOVE": "^MOVE",   # BofA MOVE index via Yahoo Finance
 }
 
-VVIX_CSV_PATH = Path(CONFIG["paths"]["output_dir"]).resolve() / "VVIX_History.csv"
+VVIX_CSV_PATH = Path("data_processed/VVIX_History.csv").resolve()
 
 
 def fetch_fred_data(api_key=None, start_date="2000-01-01", end_date=datetime.today(), series=None):
@@ -53,17 +53,18 @@ def fetch_fred_data(api_key=None, start_date="2000-01-01", end_date=datetime.tod
 
 
 def fetch_vvix(start_date="2000-01-01", end_date=datetime.today().strftime("%Y-%m-%d")):
-    if VVIX_CSV_PATH.exists():
-        logging.info("Loading VVIX from CSV …")
-        df = pd.read_csv(VVIX_CSV_PATH, parse_dates=["DATE"]).rename(columns={"DATE": "date"}).set_index("date")
-        return df.loc[start_date:end_date]
-    try:
-        logging.info("Yahoo fallback for VVIX …")
-        data = yf.Ticker("^VVIX").history(start=start_date, end=end_date)
-        return data[["Close"]].rename(columns={"Close": "VVIX"}) if not data.empty else pd.DataFrame()
-    except Exception as e:
-        logging.warning("VVIX download failed: %s", e)
+    """Fetch VVIX data from local CSV file.
+    
+    The VVIX data is sourced from CBOE's historical data page:
+    https://www.cboe.com/tradable_products/vix/vix_historical_data/
+    """
+    if not VVIX_CSV_PATH.exists():
+        logging.error("VVIX CSV file not found at %s", VVIX_CSV_PATH)
         return pd.DataFrame()
+        
+    logging.info("Loading VVIX from CSV …")
+    df = pd.read_csv(VVIX_CSV_PATH, parse_dates=["DATE"]).rename(columns={"DATE": "date"}).set_index("date")
+    return df.loc[start_date:end_date]
 
 
 def fetch_yf_series(tickers: dict[str, str], start_date: str, end_date: str) -> pd.DataFrame:
@@ -85,6 +86,11 @@ def fetch_yf_series(tickers: dict[str, str], start_date: str, end_date: str) -> 
 def calculate_macro_features(fred_df, vvix_df, extra_yf_df):
     if fred_df.empty and vvix_df.empty and extra_yf_df.empty:
         return pd.DataFrame()
+
+    # Ensure all DataFrames have timezone-naive indices
+    for df in [fred_df, vvix_df, extra_yf_df]:
+        if not df.empty:
+            df.index = df.index.tz_localize(None)
 
     df = pd.concat([fred_df, vvix_df, extra_yf_df], axis=1)
     df.index.name = "date"
@@ -110,6 +116,12 @@ def calculate_macro_features(fred_df, vvix_df, extra_yf_df):
 
 def main():
     out_path = Path(CONFIG["paths"]["output_dir"]) / "macro_daily_features.parquet"
+    
+    # Skip if output file already exists
+    if out_path.exists():
+        logging.info('Macro features already exist -> %s', out_path)
+        return
+        
     start_date = CONFIG["settings"]["start_date"]
     end_date = CONFIG["settings"]["end_date"]
     api_key = CONFIG["settings"]["fred_api_key"]

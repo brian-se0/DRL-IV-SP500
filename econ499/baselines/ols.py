@@ -1,23 +1,25 @@
-"""OLS benchmark for next-day ATM-IV forecast.
+"""Ordinary least squares baseline."""
 
-Migrated from legacy *src/ols_iv_forecast.py* and adapted to the new
-package-based layout.
-"""
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Iterable
 
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from sklearn.linear_model import LinearRegression
 
-from iv_drl.utils import load_config
-from iv_drl.utils.metrics_utils import rmse, mae
+from econ499.utils import load_config
+from econ499.utils.train_utils import load_and_split_data
+from econ499.utils.metrics_utils import rmse, mae
 
-CFG = load_config("data_config.yaml")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+CONFIG = load_config("data_config.yaml")
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DATA_CSV = (REPO_ROOT / CFG["paths"]["drl_state_file"]).resolve()
-OUT_DIR = Path(CFG["paths"]["output_dir"]).resolve()
+DATA_CSV = (REPO_ROOT / CONFIG["paths"]["drl_state_file"]).resolve()
+OUT_DIR = Path(CONFIG["paths"]["output_dir"]).resolve()
 
 
 # ----------------------------------------------------------------------
@@ -25,8 +27,8 @@ OUT_DIR = Path(CFG["paths"]["output_dir"]).resolve()
 # ----------------------------------------------------------------------
 
 def _continuous_cols(df: pd.DataFrame) -> list[str]:
-    cats = set(CFG["features"].get("categorical_cols", []))
-    return [c for c in CFG["features"]["all_feature_cols"] if c in df.columns and c not in cats]
+    cats = set(CONFIG["features"].get("categorical_cols", []))
+    return [c for c in CONFIG["features"]["all_feature_cols"] if c in df.columns and c not in cats]
 
 
 def _build_X(
@@ -49,7 +51,7 @@ def _build_X(
     X = df[cols].copy() if cols else pd.DataFrame(index=df.index)
 
     if with_groups:
-        cat_cols = [c for c in CFG["features"].get("categorical_cols", []) if c in df.columns]
+        cat_cols = [c for c in CONFIG["features"].get("categorical_cols", []) if c in df.columns]
         if cat_cols:
             dummies = pd.get_dummies(df[cat_cols], drop_first=False, dtype=float)
             X = pd.concat([X, dummies], axis=1)
@@ -84,7 +86,7 @@ def run_ols(
 
     df = pd.read_csv(DATA_CSV, parse_dates=["date"]).sort_values("date")
 
-    target = CFG["features"]["target_col"]
+    target = CONFIG["features"]["target_col"]
     df["IV_next"] = df[target].shift(-1)
     df.dropna(subset=["IV_next"], inplace=True)
 

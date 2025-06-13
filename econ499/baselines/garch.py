@@ -7,7 +7,7 @@ import pandas as pd
 from arch import arch_model
 import warnings
 
-from iv_drl.utils import load_config
+from econ499.utils import load_config
 
 warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
 

@@ -9,7 +9,7 @@ This helper centralises two common steps performed by training scripts:
 
 Example
 -------
->>> from iv_drl.utils.load_tuned import load_tuned_params
+>>> from econ499.utils.load_tuned import load_tuned_params
 >>> ppo_params = load_tuned_params('ppo', seed=42)
 >>> model = PPO('MlpPolicy', env, **ppo_params)
 """

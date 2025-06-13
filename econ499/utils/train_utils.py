@@ -1,7 +1,7 @@
 """Shared helpers for training DRL agents.
 
 Migrated from the legacy *src/train_utils.py* so that other modules can simply
-``from iv_drl.utils.train_utils import load_and_split_data``.
+``from econ499.utils.train_utils import load_and_split_data``.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from .config import load_config
-from iv_drl.envs import make_vec
+from econ499.envs import make_vec
 
 CONFIG = load_config("data_config.yaml")
 OUTPUT_DIR = Path(CONFIG["paths"]["output_dir"])

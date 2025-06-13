@@ -20,10 +20,13 @@ import optuna
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
+import logging
+import pandas as pd
 
-from iv_drl.utils import load_config
-from iv_drl.utils.metrics_utils import mae
+from econ499.utils import load_config
+from econ499.utils.metrics_utils import mae
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 CFG = load_config("data_config.yaml")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_CSV = (REPO_ROOT / CFG["paths"]["drl_state_file"]).resolve()
@@ -98,7 +101,6 @@ def objective(trial: optuna.Trial) -> float:
 
     # data load
     df = np.nan  # placeholder to avoid linter issues
-    import pandas as pd
 
     df = pd.read_csv(DATA_CSV, parse_dates=["date"]).sort_values("date")
     feat_cols = CFG["features"]["all_feature_cols"]

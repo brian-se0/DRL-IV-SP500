@@ -35,7 +35,10 @@ The robustness of our results is assessed through:
 - **OptionMetrics**: Daily implied volatility surfaces for S&P 500 index options (1996-2023)
 - **High-Frequency Data**: 5-minute returns for realized volatility calculation
 - **Macroeconomic Indicators**: GDP, inflation, unemployment, monetary policy indicators
-- **Market Sentiment**: VIX, VVIX, and other volatility indices
+- **Market Sentiment**: 
+  - VIX and other volatility indices from FRED
+  - VVIX (Cboe VIX of VIX Index) from [CBOE's historical data page](https://www.cboe.com/tradable_products/vix/vix_historical_data/)
+  - For dates before VVIX data availability (2004-2006), we use a realized volatility of VIX (rvvix) as a proxy
 
 ### Feature Blocks
 1. **Surface Characteristics**
@@ -99,51 +102,34 @@ pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.3.0+cu12
 ```
 
 ### Data Processing Pipeline
-```bash
-# 1. Build price features
-python price_feats.py
+The data processing pipeline consists of the following scripts that must be run in this exact order:
 
-# 2. Build option surface features
-python surface_feats.py
+```powershell
+# 1. Feature Building
+python -m econ499.feats.build_price
+python scripts/process_option_data.py
+python -m econ499.feats.build_iv_surface
+python -m econ499.feats.build_iv_fpca
+python -m econ499.feats.fetch_macro
+python -m econ499.feats.merge_feats
 
-# 3. Fetch macro features
-python macro_feats.py
+# 2. Hyperparameter Optimization
+python -m econ499.hpo.hpo_lstm --trials 30
+python -m econ499.hpo.hpo_ppo --n-trials 30
+python -m econ499.hpo.hpo_a2c --n-trials 30
 
-# 4. Merge all features
-python merge_feats.py
+# 3. Model Training
+python -m econ499.baselines.lstm
+python -m econ499.models.ppo --timesteps 100000
+python -m econ499.models.a2c --timesteps 100000
+
+# 4. Evaluation
+python -m econ499.eval.evaluate_all
+python -m econ499.baselines.har_rv
+python -m econ499.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.1
 ```
 
-### Model Training
-```bash
-# Train PPO agent
-python -m iv_drl.models.ppo --timesteps 100000
-
-# Train A2C agent
-python -m iv_drl.models.a2c --timesteps 100000
-
-# Train baselines
-python -m iv_drl.baselines.lstm
-python -m iv_drl.baselines.garch
-python -m iv_drl.baselines.ols
-```
-
-### Hyperparameter Optimization
-```bash
-# LSTM HPO
-python -m iv_drl.hpo.hpo_lstm --n_trials 50
-
-# DRL HPO
-python -m iv_drl.hpo.hpo_drl --agent ppo --n_trials 30
-```
-
-### Evaluation
-```bash
-# Run full evaluation
-python -m iv_drl.eval.evaluate_all
-
-# Run with statistical tests
-python -m iv_drl.eval.evaluate_all --dm_base naive --spa_base naive --mcs
-```
+Note: Each script must be run in the order shown above to ensure all dependencies are available. Each script will save its outputs to the appropriate directories.
 
 ## Robustness Checks
 
@@ -174,14 +160,13 @@ python -m iv_drl.eval.eval_alt_splits
 
 ## Directory Structure
 ```
-iv_drl/
+econ499/
 ├── models/           # DRL agent implementations
 ├── baselines/        # Baseline models
 ├── feats/            # Feature engineering scripts
 ├── eval/             # Evaluation and metrics
 ├── forecast/         # Forecast generation
 ├── hpo/              # Hyperparameter optimization
-├── orchestrate/      # Pipeline orchestration
 ├── utils/            # Helper functions
 ├── data/             # Data processing scripts
 ├── results/          # All results, metrics, and figures

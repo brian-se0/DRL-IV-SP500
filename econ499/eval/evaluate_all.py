@@ -4,19 +4,22 @@ Replaces old *src/evaluate_forecasts.py*.
 """
 from __future__ import annotations
 
+import argparse
+import logging
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from iv_drl.utils import load_config
-from iv_drl.utils.metrics_utils import rmse, mae
+from econ499.utils import load_config
+from econ499.utils.metrics_utils import rmse, mae
 
-CFG = load_config("data_config.yaml")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+CONFIG = load_config("data_config.yaml")
 ROOT = Path(__file__).resolve().parents[2]
-DATA_DIR = Path(CFG["paths"]["output_dir"]).resolve()
+DATA_DIR = Path(CONFIG["paths"]["output_dir"]).resolve()
 ARTIFACT_DIR = ROOT / "artifacts" / "tables"
-TARGET_COL = CFG["features"]["target_col"]
+TARGET_COL = CONFIG["features"]["target_col"]
 
 
 def _mape(y: np.ndarray, yhat: np.ndarray) -> float:
@@ -76,8 +79,8 @@ def evaluate_all(panel_csv: str | Path | None = None, **kwargs) -> Path:
     if panel_csv:
         panel_path = Path(panel_csv)
     else:
-        default_path = Path(CFG["paths"]["drl_state_file"]).resolve()
-        alt_path = Path(CFG["paths"]["output_dir"]).resolve() / "spx_iv_drl_state.csv"
+        default_path = Path(CONFIG["paths"]["drl_state_file"]).resolve()
+        alt_path = Path(CONFIG["paths"]["output_dir"]).resolve() / "spx_iv_drl_state.csv"
         panel_path = default_path if default_path.exists() else alt_path
     panel = pd.read_csv(panel_path, parse_dates=["date"]).sort_values("date")
     panel["IV_next"] = panel[TARGET_COL].shift(-1)
@@ -134,7 +137,7 @@ def evaluate_all(panel_csv: str | Path | None = None, **kwargs) -> Path:
 
     # ---------------- Diebold–Mariano (optional) ----------------
     if kwargs.get("dm_base") is not None:
-        from iv_drl.evaluation.stat_tests import dm_test  # local helper
+        from econ499.eval.stat_tests import dm_test  # local helper
 
         base = kwargs["dm_base"]
         if base not in eval_df.columns:
@@ -154,7 +157,7 @@ def evaluate_all(panel_csv: str | Path | None = None, **kwargs) -> Path:
 
     # ---------------- SPA / MCS (optional) ----------------
     if kwargs.get("spa_base") is not None:
-        from iv_drl.evaluation.stat_tests import spa_test
+        from econ499.eval.stat_tests import spa_test
 
         bench = kwargs["spa_base"]
         forecasts_dict = {c: eval_df[c].to_numpy() for c in eval_df.columns if c not in {"date", "IV_next"}}
@@ -164,7 +167,7 @@ def evaluate_all(panel_csv: str | Path | None = None, **kwargs) -> Path:
             print(f"{m:10s}  p={pv:.4f}")
 
     if kwargs.get("mcs", False):
-        from iv_drl.evaluation.stat_tests import mcs_loss_set
+        from econ499.eval.stat_tests import mcs_loss_set
         forecasts_dict = {c: eval_df[c].to_numpy() for c in eval_df.columns if c not in {"date", "IV_next"}}
         mcs_set = mcs_loss_set(y_true, forecasts_dict, alpha=kwargs.get("mcs_alpha", 0.10))
         print(f"\n### Model Confidence Set (alpha={kwargs.get('mcs_alpha', 0.10):.2f}) => {mcs_set}")
@@ -182,8 +185,6 @@ def evaluate_all(panel_csv: str | Path | None = None, **kwargs) -> Path:
 
 
 if __name__ == "__main__":
-    import argparse
-
     p = argparse.ArgumentParser()
     p.add_argument("--panel_csv", type=str, default=None, help="Override merged panel path")
     p.add_argument("--dm_base", type=str, default=None, help="Run DM test vs this benchmark col")

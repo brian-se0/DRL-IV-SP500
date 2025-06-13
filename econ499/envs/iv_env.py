@@ -2,7 +2,7 @@
 
 This file was migrated from the legacy *src/iv_env.py* implementation and now
 lives inside the installable ``econ499`` package so it can be imported with
-``from iv_drl.envs import IVEnv``.
+``from econ499.envs import IVEnv``.
 
 No functional changes were made – only the import path and docstring were
 updated.  Downstream agents should depend on this location going forward.

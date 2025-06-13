@@ -8,13 +8,13 @@ from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnNoMod
 from stable_baselines3.common.vec_env import VecMonitor
 import yaml
 
-from iv_drl.utils.train_utils import (
+from econ499.utils.train_utils import (
     load_and_split_data,
     scale_features,
     create_envs,
     CONFIG,
 )
-from iv_drl.utils import load_tuned_params
+from econ499.utils import load_tuned_params
 
 OUTPUT_DIR = Path(CONFIG["paths"]["output_dir"])
 TENSORBOARD_LOG_DIR = OUTPUT_DIR / "tensorboard_logs_a2c"

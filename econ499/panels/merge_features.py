@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from iv_drl.utils import load_config
+from econ499.utils import load_config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 CONFIG = load_config('data_config.yaml')
@@ -48,6 +48,9 @@ def merge():
     if 'VIXCLS' in final.columns:
         vix_ret = np.log(final['VIXCLS']).diff()
         final['rvvix'] = np.sqrt(252/22) * np.sqrt((vix_ret ** 2).rolling(22).sum()) * 100
+    else:
+        final['rvvix'] = np.nan
+
     if 'VVIX' in final.columns:
         final['vol_of_vol'] = np.where(final['VVIX'].notna(), final['VVIX'], final['rvvix'])
         final.drop(columns=['VVIX'], inplace=True)

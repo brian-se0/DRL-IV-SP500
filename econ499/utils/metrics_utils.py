@@ -1,7 +1,7 @@
 """Forecast-error metrics (RMSE, MAE, etc.).
 
 Verbatim copy of the legacy *src/metrics_utils.py* so other modules can
-``from iv_drl.utils.metrics_utils import rmse``.
+``from econ499.utils.metrics_utils import rmse``.
 """
 
 from __future__ import annotations

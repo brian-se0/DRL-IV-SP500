@@ -8,16 +8,21 @@ import numpy as np
 import optuna
 from stable_baselines3 import A2C
 
-from iv_drl.utils.train_utils import (
+from econ499.utils.train_utils import (
     load_and_split_data,
     scale_features,
     create_envs,
-    CONFIG,
 )
-from iv_drl.utils.metrics_utils import rmse
+from econ499.utils import load_config
+from econ499.utils.metrics_utils import rmse
 
 import os
 import math
+import logging
+import pandas as pd
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+CONFIG = load_config("data_config.yaml")
 
 # -----------------------------------------------------------------------------
 # Constants
@@ -28,7 +33,6 @@ DEFAULT_STUDY_NAME = "a2c_iv_hpo"
 STUDY_DB = lambda name: OUTPUT_DIR / f"{name}.db"
 BEST_PARAMS_PATH = OUTPUT_DIR / "best_a2c_params.json"
 DEFAULT_TIMESTEPS = 15_000
-
 
 # -----------------------------------------------------------------------------
 # Optional Stage-2 refinement (seed with best params and narrow search space)

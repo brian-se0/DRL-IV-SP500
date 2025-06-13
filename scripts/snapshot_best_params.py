@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-"""Copy best hyper-parameter JSON files to a version-controlled `configs/` folder.
+"""Save a snapshot of the best hyper-parameters for each model."""
 
-Run after `rebuild_all.sh` or tuning scripts so that the latest Optuna output is
-snapshotted for reproducibility.
-
-Usage:
-    python scripts/snapshot_best_params.py
-"""
-
-import shutil
+import json
+import logging
 from pathlib import Path
+import shutil
 import yaml
+
+from econ499.utils import load_config
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+CONFIG = load_config("data_config.yaml")
 
 ROOT = Path(__file__).resolve().parents[1]
 CFG = yaml.safe_load(open(ROOT / 'data_config.yaml'))

@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
-from iv_drl.utils import load_config
+from econ499.utils import load_config
 
 CFG = load_config("data_config.yaml")
 DATA_DIR = Path(CFG["paths"]["output_dir"]).resolve()

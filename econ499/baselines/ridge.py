@@ -14,9 +14,9 @@ import pandas as pd
 from sklearn.linear_model import RidgeCV
 from sklearn.preprocessing import StandardScaler
 
-from iv_drl.utils import load_config
-from iv_drl.utils.metrics_utils import rmse, mae
-from iv_drl.benchmarks.ols import _build_X  # reuse helper
+from econ499.utils import load_config
+from econ499.utils.metrics_utils import rmse, mae
+from econ499.baselines.ols import _build_X  # reuse helper
 
 CFG = load_config("data_config.yaml")
 ROOT = Path(__file__).resolve().parents[2]

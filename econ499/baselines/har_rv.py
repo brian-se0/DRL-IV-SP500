@@ -15,7 +15,7 @@ import pandas as pd
 import statsmodels.api as sm
 from statsmodels.stats.diagnostic import acorr_ljungbox
 
-from iv_drl.utils import load_config
+from econ499.utils import load_config
 
 CFG = load_config("data_config.yaml")
 ROOT = Path(__file__).resolve().parents[2]

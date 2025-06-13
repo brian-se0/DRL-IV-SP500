@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-from iv_drl.utils import load_config
+from econ499.utils import load_config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 CONFIG = load_config('data_config.yaml')
@@ -82,6 +82,11 @@ def main():
     output_dir = Path(CONFIG['paths']['output_dir'])
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / 'spx_daily_features.parquet'
+
+    # Skip if output file already exists
+    if output_path.exists():
+        logging.info('Price features already exist -> %s', output_path)
+        return
 
     start_date = CONFIG['settings']['start_date']
     end_date = CONFIG['settings']['end_date']

@@ -8,7 +8,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
-from iv_drl.utils import load_config
+from econ499.utils import load_config
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 CONFIG = load_config("data_config.yaml")
@@ -32,9 +32,9 @@ def _nearest_iv(df: pd.DataFrame, ttm_days: int, target_delta: float, is_call: b
     """
     mask = df["ttm_days"].between(ttm_days - 5, ttm_days + 5)
     if is_call:
-        sub = df.loc[mask & (df["call_put"] == "C")].copy()
+        sub = df.loc[mask & (df["option_type"] == "C")].copy()
     else:
-        sub = df.loc[mask & (df["call_put"] == "P")].copy()
+        sub = df.loc[mask & (df["option_type"] == "P")].copy()
 
     if sub.empty:
         return np.nan
@@ -120,23 +120,58 @@ def calculate_fpca_factors(df: pd.DataFrame, maturities: List[int] | None = None
 def main():
     input_dir = Path(CONFIG["paths"]["output_dir"]).resolve() / "parquet_yearly"
     output_path = Path(CONFIG["paths"]["output_dir"]).resolve() / "iv_fpca_factors.parquet"
+    
+    # Skip if output file already exists
+    if output_path.exists():
+        logging.info('FPCA factors already exist -> %s', output_path)
+        return
+        
     if not input_dir.exists():
         logging.error("OptionMetrics parquet directory not found: %s", input_dir)
         return
 
-    files = list(input_dir.glob("spx_*.parquet"))
+    # Search for parquet files in all year subdirectories
+    files = sorted(list(input_dir.glob("**/*.parquet")))
     if not files:
-        logging.error("No parquet files in %s", input_dir)
+        logging.error("No parquet files found in %s or its subdirectories", input_dir)
         return
 
-    logging.info("Loading %d parquet files…", len(files))
-    raw_df = pd.concat((pd.read_parquet(f) for f in files), ignore_index=True)
-
-    factors_df = calculate_fpca_factors(raw_df)
-    if factors_df.empty:
+    logging.info("Found %d parquet files", len(files))
+    
+    # Process files in batches by year
+    all_features = []
+    current_year = None
+    year_files = []
+    
+    for file in tqdm(files, desc="Processing files"):
+        year = file.parent.name
+        if year != current_year:
+            # Process previous year's batch
+            if year_files:
+                logging.info("Processing %d files from year %s", len(year_files), current_year)
+                year_data = pd.concat((pd.read_parquet(f) for f in year_files), ignore_index=True)
+                year_features = calculate_fpca_factors(year_data)
+                if not year_features.empty:
+                    all_features.append(year_features)
+            # Start new batch
+            current_year = year
+            year_files = []
+        year_files.append(file)
+    
+    # Process final batch
+    if year_files:
+        logging.info("Processing %d files from year %s", len(year_files), current_year)
+        year_data = pd.concat((pd.read_parquet(f) for f in year_files), ignore_index=True)
+        year_features = calculate_fpca_factors(year_data)
+        if not year_features.empty:
+            all_features.append(year_features)
+    
+    if not all_features:
         logging.warning("No FPCA factors generated.")
         return
-
+        
+    # Combine all features
+    factors_df = pd.concat(all_features)
     factors_df.to_parquet(output_path)
     logging.info('Saved FPCA factors -> %s', output_path)
 
