@@ -1,7 +1,7 @@
 paths:
   option_data_zip_dir: D:/Single-Equity Option Prices 2004_2021/
-  output_dir: ../data_processed/
-  drl_state_file: ../data_processed/spx_iv_drl_state.csv
+  output_dir: D:/ECON499/results/
+  drl_state_file: D:/ECON499/results/spx_iv_drl_state.csv
 settings:
   start_date: '2004-01-02'
   end_date: '2021-04-09'

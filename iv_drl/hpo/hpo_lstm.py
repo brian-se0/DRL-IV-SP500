@@ -100,17 +100,37 @@ def objective(trial: optuna.Trial) -> float:
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True)
 
     # data load
-    df = np.nan  # placeholder to avoid linter issues
-
     df = pd.read_csv(DATA_CSV, parse_dates=["date"]).sort_values("date")
     feat_cols = CFG["features"]["all_feature_cols"]
     feat_cols = [c for c in feat_cols if c in df.columns]
-
+    
+    # Handle missing values in features
+    # For price-based features, use forward fill
+    price_cols = ['Close', 'Volume', 'log_return', 'garman_klass_rv', 'parkinson_rv', 'amihud_illiq']
+    price_cols = [c for c in price_cols if c in feat_cols]
+    if price_cols:
+        df[price_cols] = df[price_cols].ffill()
+    
+    # For derived features, don't fill - they should be calculated correctly
+    derived_cols = ['VIX_daily_change', 'vol_of_vol', 'term_spread_10y_3m', 'credit_spread_baa_aaa']
+    derived_cols = [c for c in derived_cols if c in feat_cols]
+    
+    # For other features, use forward fill
+    other_cols = [c for c in feat_cols if c not in price_cols and c not in derived_cols]
+    if other_cols:
+        df[other_cols] = df[other_cols].ffill()
+    
+    # Convert to numpy arrays
     X_full = df[feat_cols].astype(float).to_numpy()
     target_col = CFG["features"]["target_col"]
     y_full = df[target_col].shift(-1).astype(float).to_numpy()
-    mask = ~np.isnan(y_full)
+    
+    # Remove any remaining NaN values
+    mask = ~np.isnan(y_full) & ~np.isnan(X_full).any(axis=1)
     X_full, y_full = X_full[mask], y_full[mask]
+    
+    if len(X_full) == 0:
+        raise ValueError("No valid data after preprocessing")
 
     X_seq, y_seq = build_sequences(X_full, y_full, seq_len)
 

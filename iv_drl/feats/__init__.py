@@ -1,11 +1,16 @@
-from iv_drl.feats.build_price import calculate_price_features
-from iv_drl.feats.build_iv_surface import calculate_surface_features
-from iv_drl.feats.build_iv_fpca import calculate_fpca_factors
-from iv_drl.feats.fetch_macro import calculate_macro_features
+"""
+Feature engineering and processing module for IV-DRL project.
+"""
+
+from .imputation import kalman_impute, tdi_impute, volatility_aware_impute
+from .dynamic_pca import DynamicPCA
+from .merge_feats import handle_missing_values, apply_factor_analysis
 
 __all__ = [
-    'calculate_price_features',
-    'calculate_surface_features',
-    'calculate_fpca_factors',
-    'calculate_macro_features',
+    'kalman_impute',
+    'tdi_impute',
+    'volatility_aware_impute',
+    'DynamicPCA',
+    'handle_missing_values',
+    'apply_factor_analysis'
 ] 

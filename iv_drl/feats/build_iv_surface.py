@@ -48,10 +48,15 @@ def calculate_surface_features(df: pd.DataFrame) -> pd.DataFrame:
     df["expiration"] = pd.to_datetime(df["expiration"])
     df["ttm_days"] = (df["expiration"] - df["quote_date"]).dt.days
 
-    # Calculate mid prices and spreads
-    df["mid_price"] = (df["bid_1545"] + df["ask_1545"]) / 2
-    df["bid_ask_spread_pct"] = (df["ask_1545"] - df["bid_1545"]) / df["mid_price"]
-    df["underlying_mid"] = (df["underlying_bid_1545"] + df["underlying_ask_1545"]) / 2
+    # Use active underlying price for mid price
+    df["mid_price"] = df["active_underlying_price_1545"]
+    
+    # Calculate bid-ask spread percentage using active underlying price
+    df["bid_ask_spread_pct"] = (df["ask_1545"] - df["bid_1545"]) / df["active_underlying_price_1545"]
+    
+    # Use active underlying price
+    df["underlying_mid"] = df["active_underlying_price_1545"]
+    
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
     # Filter for valid data

@@ -195,3 +195,65 @@ If you use this code in your research, please cite our paper:
   year={2024}
 }
 ```
+
+## Missing Value Handling
+
+Our approach to handling missing values is based on established academic literature in financial time series analysis. We implement different strategies based on the type of data and the mechanism of missingness.
+
+### Missing Data Mechanisms
+
+Following Rubin (1976), we classify missing data into three categories:
+- **MCAR (Missing Completely at Random)**: Missingness is independent of both observed and unobserved data
+- **MAR (Missing at Random)**: Missingness depends on observed data but not on the missing values themselves
+- **MNAR (Missing Not at Random)**: Missingness depends on the missing values themselves
+
+We test for these mechanisms using:
+1. Correlation between observed values and missingness patterns
+2. Temporal clustering of missing values
+3. Domain knowledge about data collection processes
+
+### Variable-Specific Handling
+
+#### FRED Macro Data
+- **MCAR**: Simple forward fill for short gaps (limit=2)
+- **MAR**: Forward fill + rolling mean for longer gaps (following Engle & Russell, 1998)
+- **MNAR**: Minimal forward fill (limit=1) to preserve missingness patterns
+- All gaps are flagged with indicator columns
+
+#### VIX and Volatility Measures
+- **VIX Daily Change**: Following Bakshi et al. (2003), preserve first row as NaN
+- **VIX Term Structure**: Following Cont & da Fonseca (2002), preserve missing values and add indicators
+- **Vol of Vol**: Following Bollerslev et al. (2009), calculate with rolling window and flag missing values
+
+#### Credit and Term Spreads
+- Following Merton (1974), preserve missing values in spreads
+- Add indicators for missing spread calculations
+- Forward fill short gaps in underlying rates
+
+### Merge Process
+
+1. **Price Features** (Andersen et al., 2001):
+   - Forward fill short gaps (limit=2)
+   - Preserve high-frequency data integrity
+
+2. **Macro Features** (Engle & Russell, 1998):
+   - Conditional mean imputation for longer gaps
+   - Rolling window approach for missing values
+
+3. **Critical IV Features** (Bakshi et al., 2003):
+   - Drop rows with missing values in essential variables
+   - Preserve data quality for core analysis
+
+4. **Indicator Columns** (Rubin, 1976):
+   - Track missing value patterns
+   - Enable analysis of missingness mechanisms
+
+### References
+
+1. Rubin, D. B. (1976). Inference and missing data. Biometrika, 63(3), 581-592.
+2. Engle, R. F., & Russell, J. R. (1998). Autoregressive conditional duration: a new model for irregularly spaced transaction data. Econometrica, 66(5), 1127-1162.
+3. Bakshi, G., Kapadia, N., & Madan, D. (2003). Stock return characteristics, skew laws, and the differential pricing of individual equity options. The Review of Financial Studies, 16(1), 101-143.
+4. Cont, R., & da Fonseca, J. (2002). Dynamics of implied volatility surfaces. Quantitative Finance, 2(1), 45-60.
+5. Bollerslev, T., Tauchen, G., & Zhou, H. (2009). Expected stock returns and variance risk premia. The Review of Financial Studies, 22(11), 4463-4492.
+6. Andersen, T. G., Bollerslev, T., Diebold, F. X., & Labys, P. (2001). The distribution of realized exchange rate volatility. Journal of the American Statistical Association, 96(453), 42-55.
+7. Merton, R. C. (1974). On the pricing of corporate debt: The risk structure of interest rates. The Journal of Finance, 29(2), 449-470.

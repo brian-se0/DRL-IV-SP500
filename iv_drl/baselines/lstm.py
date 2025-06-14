@@ -138,7 +138,18 @@ def run_lstm(*, out_csv: str | Path | None = None, param_file: str | None = None
 
     feature_cols = CFG["features"]["all_feature_cols"]
     # ensure all columns present
-    feature_cols = [c for c in feature_cols if c in df.columns]
+    available_cols = [c for c in feature_cols if c in df.columns]
+    missing_cols = [c for c in feature_cols if c not in df.columns]
+    print(f"Available features: {len(available_cols)}/{len(feature_cols)}")
+    print(f"Missing features: {missing_cols}")
+    feature_cols = available_cols
+    
+    # Handle remaining NaNs in macro features
+    macro_cols = ['vol_of_vol', 'vix_ts_slope']
+    for col in macro_cols:
+        if col in df.columns:
+            df[col] = df[col].ffill()
+    
     X_full = df[feature_cols].astype(float).to_numpy()
 
     # target is next-day ATM-IV
@@ -185,7 +196,7 @@ def run_lstm(*, out_csv: str | Path | None = None, param_file: str | None = None
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, factor=0.5, patience=3)
     loss_fn = nn.SmoothL1Loss()
 
-    best_state = None
+    best_state = model.state_dict()  # Initialize with current state
     best_val = float("inf")
     patience = PATIENCE
 
@@ -218,14 +229,27 @@ def run_lstm(*, out_csv: str | Path | None = None, param_file: str | None = None
             if patience == 0:
                 break
 
-    model.load_state_dict(best_state)
+    if best_state is not None:  # Only load if we have a best state
+        model.load_state_dict(best_state)
 
     # ------------------------------------------------------------------
     # 5. Forecast on OOS sequences
     # ------------------------------------------------------------------
+    print(f"oos_X shape: {oos_X.shape}")
+    print(f"Any NaN in oos_X: {np.isnan(oos_X).any()}")
+    print(f"Any Inf in oos_X: {np.isinf(oos_X).any()}")
+    # Print which features have NaNs in oos_X
+    nan_features = []
+    for i, col in enumerate(feature_cols):
+        if np.isnan(oos_X[:, :, i]).any():
+            nan_features.append(col)
+    print(f"Features with NaNs in oos_X: {nan_features}")
     model.eval()
     with torch.no_grad():
         preds = model(tensor(oos_X)).cpu().numpy()
+        print(f"Prediction shape: {preds.shape}")
+        print(f"First few predictions: {preds[:5]}")
+        print(f"Any NaN predictions: {np.isnan(preds).any()}")
 
     out_path = Path(out_csv) if out_csv else OUT_DIR / "lstm_oos_predictions.csv"
     out_path.parent.mkdir(parents=True, exist_ok=True)
