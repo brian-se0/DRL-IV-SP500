@@ -35,6 +35,7 @@ The robustness of our results is assessed through:
 - **OptionMetrics**: Daily implied volatility surfaces for S&P 500 index options (1996-2023)
 - **High-Frequency Data**: 5-minute returns for realized volatility calculation
 - **Macroeconomic Indicators**: GDP, inflation, unemployment, monetary policy indicators
+- **Liquidity Proxy**: Amihud illiquidity uses SPY ETF dollar volume
 - **Market Sentiment**: 
   - VIX and other volatility indices from FRED
   - VVIX (Cboe VIX of VIX Index) from [CBOE's historical data page](https://www.cboe.com/tradable_products/vix/vix_historical_data/)
@@ -107,8 +108,8 @@ The data processing pipeline consists of the following scripts that must be run 
 ```powershell
 # 1. Feature Building
 python -m econ499.feats.build_price
-python scripts/process_option_data.py
-python -m econ499.feats.build_iv_surface
+python scripts/process_option_data.py  # extracts OptionMetrics zip files
+python -m econ499.feats.build_iv_surface  # applies liquidity filters and gap interpolation
 python -m econ499.feats.build_iv_fpca
 python -m econ499.feats.fetch_macro
 python -m econ499.feats.merge_feats

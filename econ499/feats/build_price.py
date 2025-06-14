@@ -10,17 +10,28 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 CONFIG = load_config('data_config.yaml')
 
 
-def fetch_spx_data(start_date='2000-01-01', end_date=pd.Timestamp.today().strftime('%Y-%m-%d')):
-    """Fetch SPX OHLCV data from Yahoo Finance."""
-    logging.info("Fetching SPX data from Yahoo Finance…")
-    spx = yf.Ticker("^GSPC")
-    hist = spx.history(start=start_date, end=end_date)
-    if hist.empty:
-        logging.error("No SPX data returned. Check ticker/date range.")
+def fetch_spx_data(start_date: str = "2000-01-01", end_date: str | None = None):
+    """Fetch SPX OHLC data and SPY volume from Yahoo Finance."""
+
+    if end_date is None:
+        end_date = pd.Timestamp.today().strftime("%Y-%m-%d")
+
+    logging.info("Fetching SPX and SPY data from Yahoo Finance …")
+    spx = yf.Ticker("^GSPC").history(start=start_date, end=end_date)
+    spy = yf.Ticker("SPY").history(start=start_date, end=end_date)
+
+    if spx.empty or spy.empty:
+        logging.error("No SPX or SPY data returned. Check tickers/date range.")
         return None
-    logging.info("Fetched %d rows of SPX data.", len(hist))
-    hist.index = pd.to_datetime(hist.index.date)
-    return hist
+
+    spx.index = pd.to_datetime(spx.index.date)
+    spy.index = pd.to_datetime(spy.index.date)
+
+    spx["spy_close"] = spy["Close"]
+    spx["spy_volume"] = spy["Volume"]
+
+    logging.info("Fetched %d rows of SPX data.", len(spx))
+    return spx
 
 
 def calculate_price_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -65,9 +76,11 @@ def calculate_price_features(df: pd.DataFrame) -> pd.DataFrame:
     features['garman_klass_rv'] = 0.5 * np.square(np.log(features['High'] / features['Low'])) - (2 * np.log(2) - 1) * np.square(np.log(features['Close'] / features['Open']))
     features['parkinson_rv'] = (1 / (4 * np.log(2))) * np.square(np.log(features['High'] / features['Low']))
 
-    # Amihud Illiquidity
-    dollar_volume = features['Close'] * features['Volume']
+    # Amihud Illiquidity using SPY volume as liquidity proxy
+    dollar_volume = features['spy_close'] * features['spy_volume']
+    dollar_volume.replace(0, np.nan, inplace=True)
     features['amihud_illiq'] = np.abs(features['log_return']) / dollar_volume * 1e6
+    features['amihud_illiq'].replace([np.inf, -np.inf], np.nan, inplace=True)
 
     for win in (5, 21):
         features[f'garman_klass_rv_{win}d'] = features['garman_klass_rv'].rolling(win).mean()
@@ -75,7 +88,15 @@ def calculate_price_features(df: pd.DataFrame) -> pd.DataFrame:
         features[f'amihud_illiq_{win}d_mean'] = features['amihud_illiq'].rolling(win).mean()
 
     logging.info("Finished price feature calc.")
-    return features.drop(columns=['Open', 'High', 'Low', 'Dividends', 'Stock Splits'])
+    return features.drop(columns=[
+        'Open',
+        'High',
+        'Low',
+        'Dividends',
+        'Stock Splits',
+        'spy_close',
+        'spy_volume',
+    ])
 
 
 def main():
@@ -102,4 +123,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()
