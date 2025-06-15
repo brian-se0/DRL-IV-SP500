@@ -6,8 +6,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from iv_drl.utils import load_config
-from iv_drl.utils.metrics_utils import rmse, mae
+from econ499.utils import load_config
+from econ499.utils.metrics_utils import rmse, mae
 from econ499.eval.utils import _load_predictions, _mape, _qlike
 
 CFG = load_config("data_config.yaml")

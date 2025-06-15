@@ -35,6 +35,7 @@ The robustness of our results is assessed through:
 - **OptionMetrics**: Daily implied volatility surfaces for S&P 500 index options (1996-2023)
 - **High-Frequency Data**: 5-minute returns for realized volatility calculation
 - **Macroeconomic Indicators**: GDP, inflation, unemployment, monetary policy indicators
+- **Liquidity Proxy**: Amihud illiquidity uses SPY ETF dollar volume
 - **Market Sentiment**: 
   - VIX and other volatility indices from FRED
   - VVIX (Cboe VIX of VIX Index) from [CBOE's historical data page](https://www.cboe.com/tradable_products/vix/vix_historical_data/)
@@ -107,8 +108,8 @@ The data processing pipeline consists of the following scripts that must be run 
 ```powershell
 # 1. Feature Building
 python -m econ499.feats.build_price
-python scripts/process_option_data.py
-python -m econ499.feats.build_iv_surface
+python scripts/process_option_data.py  # extracts OptionMetrics zip files
+python -m econ499.feats.build_iv_surface  # applies liquidity filters and gap interpolation
 python -m econ499.feats.build_iv_fpca
 python -m econ499.feats.fetch_macro
 python -m econ499.feats.merge_feats
@@ -136,26 +137,26 @@ Note: Each script must be run in the order shown above to ensure all dependencie
 ### Feature Block Ablations
 ```bash
 # Train without macro features
-python -m iv_drl.models.ppo --exclude_block macro
+python -m econ499.models.ppo --exclude_block macro
 
 # Generate forecasts
-python -m iv_drl.forecast.make_drl_forecast --model ppo_best_model/best_model.zip --exclude_block macro
+python -m econ499.forecast.make_drl_forecast --model ppo_best_model/best_model.zip --exclude_block macro
 ```
 
 ### Static-Arbitrage Penalty Sensitivity
 ```bash
 # Train with different penalty weights
-python -m iv_drl.models.ppo --lambda 0  # No penalty
-python -m iv_drl.models.ppo --lambda 20  # Strong penalty
+python -m econ499.models.ppo --lambda 0  # No penalty
+python -m econ499.models.ppo --lambda 20  # Strong penalty
 ```
 
 ### Alternative Sample Splits
 ```bash
 # Walk-forward evaluation
-python -m iv_drl.eval.eval_walk_forward
+python -m econ499.eval.eval_walk_forward
 
 # Hold-out evaluation
-python -m iv_drl.eval.eval_alt_splits
+python -m econ499.eval.eval_alt_splits
 ```
 
 ## Directory Structure

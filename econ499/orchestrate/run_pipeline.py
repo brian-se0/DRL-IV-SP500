@@ -22,16 +22,11 @@ ARTIFACT_TABLE = Path(__file__).resolve().parents[2] / "artifacts" / "tables" / 
 
 # (module, callable, description, output path)
 _TASKS: list[tuple[str, str, str, Path | None]] = [
-    ("econ499.features.build_price", "main", "SPX price features", DATA_DIR / "spx_daily_features.parquet"),
-    (
-        "econ499.features.build_iv_surface",
-        "main",
-        "IV-surface features",
-        DATA_DIR / "iv_surface_daily_features.parquet",
-    ),
-    ("econ499.features.fetch_macro", "main", "Macro series", DATA_DIR / "macro_daily_features.parquet"),
+    ("econ499.feats.build_price", "main", "SPX price features", DATA_DIR / "spx_daily_features.parquet"),
+    ("econ499.feats.build_iv_surface", "main", "IV-surface features", DATA_DIR / "iv_surface_daily_features.parquet"),
+    ("econ499.feats.fetch_macro", "main", "Macro series", DATA_DIR / "macro_daily_features.parquet"),
     ("econ499.panels.merge_features", "merge", "Merge feature sets", DATA_DIR / "spx_iv_drl_state.csv"),
-    ("econ499.evaluation.evaluate_all", "evaluate_all", "Evaluate forecasts", ARTIFACT_TABLE),
+    ("econ499.eval.evaluate_all", "evaluate_all", "Evaluate forecasts", ARTIFACT_TABLE),
 ]
 
 

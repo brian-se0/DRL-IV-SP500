@@ -4,7 +4,9 @@ set -euo pipefail
 
 # Resolve absolute data_processed directory from YAML so paths work regardless of CWD
 DATA_DIR="$(python - <<PY
-import yaml, pathlib, sys; cfg=yaml.safe_load(open('data_config.yaml')); print(pathlib.Path(cfg['paths']['output_dir']).resolve())
+import yaml, pathlib, sys
+cfg = yaml.safe_load(open('cfg/data_config.yaml'))
+print(pathlib.Path(cfg['paths']['output_dir']).resolve())
 PY)"
 
 BLOCKS=(surface realised macro)
@@ -39,6 +41,6 @@ for block in "${BLOCKS[@]}"; do
 done
 
 # Aggregate metrics for ablation runs (including new forecasts)
-python -m econ499.evaluation.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.10 | cat
+python -m econ499.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.10 | cat
 
 echo "Ablation study complete. Updated metrics available at artifacts/tables/forecast_metrics.csv" 
