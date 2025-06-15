@@ -114,7 +114,7 @@ python scripts/process_option_data.py  # extracts OptionMetrics zip files
 python -m econ499.feats.build_iv_surface  # applies liquidity filters and gap interpolation
 python -m econ499.feats.build_iv_fpca
 python -m econ499.feats.fetch_macro
-python -m econ499.feats.merge_feats
+python -m econ499.panels.merge_features
 
 # 2. Hyperparameter Optimization
 python -m econ499.hpo.hpo_lstm --trials 30
