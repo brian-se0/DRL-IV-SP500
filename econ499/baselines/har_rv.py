@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+import statsmodels
 from statsmodels.stats.diagnostic import acorr_ljungbox
 
 from econ499.utils import load_config
@@ -81,8 +82,8 @@ def run_har_rv(*, out_csv: str | Path | None = None, train_ratio: float = 0.8) -
     )
 
     # Simple Ljung-Box check on residuals (train set)
-    lb_stat, lb_p = acorr_ljungbox(model.resid, lags=[5], return_df=False)
-    print("Train Ljung-Box Q(5) p-value:", lb_p[0])
+    lb_df = acorr_ljungbox(model.resid, lags=[5], return_df=True)
+    print("Train Ljung-Box Q(5) p-value:", lb_df['lb_pvalue'].iloc[0])
     print('Saved HAR-RV forecasts to', out_path)
     return out_path
 

@@ -16,19 +16,20 @@ def _mape(y: np.ndarray, yhat: np.ndarray) -> float:
     return float(np.mean(np.abs((y[mask] - yhat[mask]) / y[mask])) * 100)
 
 
-def _find_forecast_col(df: pd.DataFrame) -> str:
+def _find_forecast_col(df: pd.DataFrame) -> str | None:
     others = [c for c in df.columns if c.lower() != "date"]
     if len(others) == 1:
         return others[0]
     for c in others:
         if c.endswith("_forecast"):
             return c
-    raise ValueError("Unable to identify forecast column")
+    return None
 
 
 def _load_predictions() -> list[tuple[str, pd.Series]]:
     out = []
-    for csv in DATA_DIR.glob("*_oos_predictions.csv"):
+    files = list(DATA_DIR.glob("*_oos_predictions.csv"))
+    for csv in files:
         try:
             df = pd.read_csv(csv, parse_dates=["date"])
         except Exception:
@@ -36,6 +37,8 @@ def _load_predictions() -> list[tuple[str, pd.Series]]:
         if df.empty or "date" not in df.columns:
             continue
         col = _find_forecast_col(df)
+        if col is None:
+            continue
         name = col.replace("_forecast", "")
         out.append((name, df[["date", col]].rename(columns={col: name})))
     return out

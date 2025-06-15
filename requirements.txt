@@ -33,3 +33,5 @@ shap==0.44.1
 pandas_datareader
 
 pyarrow
+
+tabulate

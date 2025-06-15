@@ -96,10 +96,10 @@ python -m econ499.baselines.ffn
 
 ### Environment Setup
 ```bash
-# Create and activate virtual environment
-python -m venv venv312
-source venv312/bin/activate  # Linux/Mac
-.\venv312\Scripts\Activate.ps1  # Windows
+# Create and activate virtual environment (Python 3.11 recommended)
+python3.11 -m venv venv311
+source venv311/bin/activate  # Linux/Mac
+.\venv311\Scripts\Activate.ps1  # Windows
 
 # Install dependencies
 pip install -r requirements.txt

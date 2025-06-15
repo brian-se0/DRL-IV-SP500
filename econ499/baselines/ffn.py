@@ -204,5 +204,13 @@ if __name__ == "__main__":
     p.add_argument("--seed", type=int, default=42, help="Global RNG seed")
     p.add_argument("--max_epochs", type=int, default=None, help="Override training epochs")
     args = p.parse_args()
+
+    # Automatically use best_ffn_params.json if --param_file is not provided and file exists
+    DEFAULT_BEST_PARAMS = Path(OUT_DIR) / "best_ffn_params.json"
+    param_file = args.param_file
+    if param_file is None and DEFAULT_BEST_PARAMS.exists():
+        param_file = str(DEFAULT_BEST_PARAMS)
+        print(f"[INFO] Using best FFN params from {param_file}")
+
     _set_seed(args.seed)
-    run_ffn(out_csv=args.out_csv, param_file=args.param_file, seed=args.seed, max_epochs=args.max_epochs)
+    run_ffn(out_csv=args.out_csv, param_file=param_file, seed=args.seed, max_epochs=args.max_epochs)

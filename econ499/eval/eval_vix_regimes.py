@@ -39,12 +39,11 @@ def _build_eval_df(panel_csv: str | Path | None = None) -> pd.DataFrame:
 
 def evaluate_by_regime(panel_csv: str | Path | None = None, *, vix_thresh: float = 20.0) -> Path:
     df = _build_eval_df(panel_csv)
-    df["regime"] = pd.Series(
-        pd.Categorical(np.where(df[VIX_COL] <= vix_thresh, "calm", "turbulent"))
-    )
+    df["regime"] = np.where(df[VIX_COL] <= vix_thresh, "calm", "turbulent")
+    df["regime"] = pd.Categorical(df["regime"])
 
     rows: list[dict] = []
-    for regime, subset in df.groupby("regime"):
+    for regime, subset in df.groupby("regime", observed=False):
         y_true = subset["IV_next"].to_numpy()
         naive_mae = mae(y_true, subset["naive"].to_numpy())
         for col in subset.columns:
