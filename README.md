@@ -102,6 +102,14 @@ pip install -r requirements.txt
 pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.3.0+cu121 torchvision torchaudio
 ```
 
+### Running Tests
+Install dev dependencies and run pytest to execute the test suite. Continuous integration should use the same commands.
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+
 ### Data Processing Pipeline
 Set the directory containing the OptionMetrics daily ZIP files in
 `cfg/data_config.yaml` under `paths.option_data_zip_dir`.
