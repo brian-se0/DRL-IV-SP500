@@ -33,6 +33,7 @@ def train_ppo(total_timesteps: int = 100_000, action_scale: float = 0.05, *, exc
         train_df,
         valid_df,
         obs_cols=obs_cols,
+        maturities=CONFIG["features"]["surface"]["maturities"],
         action_scale_factor=action_scale,
         reward_type="mse",
         reward_scale=1000,

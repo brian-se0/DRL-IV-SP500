@@ -35,7 +35,7 @@ features:
     window: 252  # 1 year of trading days
     min_periods: 126
   surface:
-    maturities: [30, 60, 90, 180, 365]  # days
+    maturities: [30, 90]  # days (forecast both)
     moneyness_range: [-0.2, 0.2]
   fpca:
     n_components: 3
