@@ -201,6 +201,20 @@ The framework generates several outputs:
 
 All results are saved in the `results/` directory.
 
+## Interpretability
+To understand which features drive the agent's decisions we expose a small
+utility script based on [SHAP](https://github.com/shap/shap).  The script loads
+a saved PPO/A2C model, computes SHAP values for a sample of validation
+observations, and writes a bar chart of mean absolute attributions.
+
+Run
+
+```bash
+python analysis/shap_drl.py --model results/ppo_best_model/best_model.zip
+```
+
+Figures are saved in `artifacts/figures`.
+
 ## Citation
 If you use this code in your research, please cite our paper:
 ```
