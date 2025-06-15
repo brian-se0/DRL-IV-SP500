@@ -148,8 +148,8 @@ python -m econ499.forecast.make_drl_forecast --model ppo_best_model/best_model.z
 ### Static-Arbitrage Penalty Sensitivity
 ```bash
 # Train with different penalty weights
-python -m econ499.models.ppo --lambda 0  # No penalty
-python -m econ499.models.ppo --lambda 20  # Strong penalty
+python -m econ499.models.ppo --arb_lambda 0  # No penalty
+python -m econ499.models.ppo --arb_lambda 20  # Strong penalty
 ```
 
 ### Alternative Sample Splits
