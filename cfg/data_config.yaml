@@ -6,6 +6,7 @@ paths:
   figures_dir: "results/figures"
   tables_dir: "results/tables"
   drl_state_file: "results/spx_iv_drl_state.csv"
+  vvix_csv: "VVIX_History.csv"
 
 settings:
   start_date: "1996-01-01"

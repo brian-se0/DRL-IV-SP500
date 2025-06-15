@@ -27,7 +27,7 @@ YF_EXTRA_TICKERS = {
     "MOVE": "^MOVE",   # BofA MOVE index via Yahoo Finance
 }
 
-VVIX_CSV_PATH = Path("data_processed/VVIX_History.csv").resolve()
+VVIX_CSV_PATH = Path(CONFIG["paths"]["vvix_csv"]).resolve()
 
 
 def fetch_fred_data(api_key=None, start_date="2000-01-01", end_date=datetime.today(), series=None):
@@ -53,8 +53,8 @@ def fetch_fred_data(api_key=None, start_date="2000-01-01", end_date=datetime.tod
 
 
 def fetch_vvix(start_date="2000-01-01", end_date=datetime.today().strftime("%Y-%m-%d")):
-    """Fetch VVIX data from local CSV file.
-    
+    """Fetch VVIX data from the CSV path specified in the config.
+
     The VVIX data is sourced from CBOE's historical data page:
     https://www.cboe.com/tradable_products/vix/vix_historical_data/
     """
