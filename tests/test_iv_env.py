@@ -8,12 +8,12 @@ from econ499.envs.iv_env import IVEnv
 def test_ivenv_step_rewards_and_done():
     df = pd.DataFrame(
         {
-            "iv_t_orig": [1.0, 2.0, 3.0],
-            "iv_t_plus1": [1.1, 1.9, 3.0],
+            "iv_t_orig_30": [1.0, 2.0, 3.0],
+            "iv_t_plus1_30": [1.1, 1.9, 3.0],
             "feat": [0.0, 0.0, 0.0],
         }
     )
-    env = IVEnv(df, ["feat"], reward_scale=1.0)
+    env = IVEnv(df, ["feat"], maturities=[30], reward_scale=1.0)
     obs, info = env.reset()
 
     obs1, reward1, term1, trunc1, _ = env.step(np.array([0.0]))
