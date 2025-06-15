@@ -66,7 +66,7 @@ done
 # ------------------- evaluation -------------------
 
 echo "[EVAL] Running evaluator (suppressing runpy warning)"
-python -W ignore::RuntimeWarning -m econ499.evaluation.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.1 | cat
+python -W ignore::RuntimeWarning -m econ499.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.1 | cat
 
 # Save tuned params snapshot for reproducibility
 python scripts/snapshot_best_params.py | cat

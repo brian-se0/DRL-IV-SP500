@@ -54,10 +54,15 @@ def calculate_surface_features(df: pd.DataFrame) -> pd.DataFrame:
     df["underlying_mid"] = (df["underlying_bid_1545"] + df["underlying_ask_1545"]) / 2
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
-    # Filter for valid data
-    req = ["ttm_days", "delta_1545", "implied_volatility_1545", "bid_ask_spread_pct"]
+    # Liquidity filter: drop illiquid quotes
+    req = [
+        "ttm_days",
+        "delta_1545",
+        "implied_volatility_1545",
+        "bid_ask_spread_pct",
+    ]
     df.dropna(subset=req, inplace=True)
-    df = df[df["ttm_days"] > 0]
+    df = df[(df["ttm_days"] > 0) & (df["bid_ask_spread_pct"] <= 0.4) & (df["open_interest"] > 0)]
 
     dates = sorted(df["quote_date"].unique())
     chunk_size = 20
@@ -169,10 +174,16 @@ def main():
         
     # Combine all features
     feat_df = pd.concat(all_features)
+    feat_df.sort_index(inplace=True)
+
+    # Interpolate small gaps instead of dropping entire days
+    feat_df.interpolate(method="time", limit=2, inplace=True)
+    feat_df.ffill(inplace=True)
+
     feat_df.dropna(subset=["atm_iv_30d_lag_5", "atm_iv_30d_change_1d"], inplace=True)
     feat_df.to_parquet(output_path)
     logging.info('Saved IV-surface features -> %s', output_path)
 
 
 if __name__ == "__main__":
-    main() 
+    main()
