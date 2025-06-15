@@ -3,7 +3,7 @@ from __future__ import annotations
 """Hyper-parameter optimisation for the LSTM baseline using Optuna.
 
 Run:
-    python -m econ499.tune.hpo_lstm --trials 50
+    python -m econ499.hpo.hpo_lstm --trials 50
 This creates an SQLite study in ``data_processed/`` (same folder as other
 HPO studies) and writes the best params to
 ``data_processed/best_lstm_params.json``.
