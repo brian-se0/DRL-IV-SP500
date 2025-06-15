@@ -1,7 +1,7 @@
 paths:
   output_dir: "results"
   data_dir: "data_processed"
-  option_data_zip_dir: "data_raw/option_zips"
+  option_data_zip_dir: "D:/Single-Equity Option Prices 2004_2021"
   model_dir: "results/models"
   figures_dir: "results/figures"
   tables_dir: "results/tables"

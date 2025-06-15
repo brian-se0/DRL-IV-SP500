@@ -93,7 +93,12 @@ def _evaluate_model(model: A2C, valid_env) -> float:
     while not done:
         action, _ = model.predict(obs, deterministic=True)
         iv_today = df.loc[step, "iv_t_orig"]
-        action_scalar = float(np.asarray(action).squeeze())
+        # Robustly extract scalar from action array
+        action_arr = np.asarray(action)
+        if action_arr.size == 1:
+            action_scalar = float(action_arr.item())
+        else:
+            action_scalar = float(action_arr.flat[0])
         forecast = iv_today * (1 + scale * action_scalar)
         actual = df.loc[step, "iv_t_plus1"]
         preds.append(forecast)

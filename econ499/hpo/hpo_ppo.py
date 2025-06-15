@@ -106,10 +106,12 @@ def _evaluate_model(model: PPO, valid_env) -> float:
     while not done:
         action, _ = model.predict(obs, deterministic=True)
         iv_today = df.loc[step, "iv_t_orig"]
-        # ``action`` returned by SB3 can be a NumPy array with shape (n_envs,). Explicitly
-        # squeeze to a python float to avoid the "Conversion of an array with ndim > 0 to a
-        # scalar is deprecated" warning introduced in NumPy 1.25.
-        action_scalar = float(np.asarray(action).squeeze())
+        # Robustly extract scalar from action array
+        action_arr = np.asarray(action)
+        if action_arr.size == 1:
+            action_scalar = float(action_arr.item())
+        else:
+            action_scalar = float(action_arr.flat[0])
         forecast = iv_today * (1 + scale * action_scalar)
         actual = df.loc[step, "iv_t_plus1"]
         preds.append(forecast)

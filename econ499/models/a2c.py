@@ -42,6 +42,9 @@ def train_a2c(total_timesteps: int = 50_000, action_scale: float = 0.05, *, excl
     from stable_baselines3.common.vec_env import VecMonitor as _VM
     train_env = _VM(train_env)
 
+    eval_log_dir = (OUTPUT_DIR / "a2c_eval_logs").resolve()
+    eval_log_dir.mkdir(parents=True, exist_ok=True)
+
     eval_env = VecMonitor(valid_env)
     suffix = "" if arb_lambda == 0 else f"_l{int(arb_lambda)}"
     best_path = OUTPUT_DIR / f"a2c_best_model{suffix}"
@@ -53,7 +56,7 @@ def train_a2c(total_timesteps: int = 50_000, action_scale: float = 0.05, *, excl
     eval_callback = EvalCallback(
         eval_env,
         best_model_save_path=str(best_path),
-        log_path=str(OUTPUT_DIR / "a2c_eval_logs"),
+        log_path=str(eval_log_dir),
         eval_freq=1000,
         deterministic=True,
         callback_after_eval=stopper,
@@ -86,10 +89,19 @@ def train_a2c(total_timesteps: int = 50_000, action_scale: float = 0.05, *, excl
     default_kwargs.update(tuned)
 
     # YAML hyper-param override
+    if hparam_file is None:
+        default_best_params = OUTPUT_DIR / "best_a2c_params.json"
+        if default_best_params.exists():
+            hparam_file = str(default_best_params)
+            print(f"[INFO] Using best A2C params from {hparam_file}")
+
     if hparam_file:
         try:
             with open(hparam_file, "r", encoding="utf-8") as fh:
                 yaml_params: dict = yaml.safe_load(fh) or {}
+                # Remove keys not accepted by A2C
+                yaml_params.pop("batch_size", None)
+                yaml_params.pop("rollouts", None)
                 default_kwargs.update(yaml_params)
         except Exception as exc:
             print(f"[WARN] Could not read hparam_file {hparam_file}: {exc}")

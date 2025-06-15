@@ -80,7 +80,8 @@ def calculate_price_features(df: pd.DataFrame) -> pd.DataFrame:
     dollar_volume = features['spy_close'] * features['spy_volume']
     dollar_volume.replace(0, np.nan, inplace=True)
     features['amihud_illiq'] = np.abs(features['log_return']) / dollar_volume * 1e6
-    features['amihud_illiq'].replace([np.inf, -np.inf], np.nan, inplace=True)
+    # Future-proof: avoid chained assignment with inplace=True
+    features['amihud_illiq'] = features['amihud_illiq'].replace([np.inf, -np.inf], np.nan)
 
     for win in (5, 21):
         features[f'garman_klass_rv_{win}d'] = features['garman_klass_rv'].rolling(win).mean()

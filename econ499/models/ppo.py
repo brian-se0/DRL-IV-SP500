@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnNoModelImprovement
 from stable_baselines3.common.vec_env import VecMonitor
 import yaml
+import numpy as np
 
 from econ499.utils.train_utils import (
     load_and_split_data,
@@ -53,10 +55,24 @@ def train_ppo(total_timesteps: int = 100_000, action_scale: float = 0.05, *, exc
         verbose=1,
     )
 
+    eval_log_dir = (OUTPUT_DIR / "ppo_eval_logs").resolve()
+    if eval_log_dir.exists() and not eval_log_dir.is_dir():
+        eval_log_dir.unlink()  # Remove file if it exists
+    eval_log_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"[DEBUG] eval_log_dir: {eval_log_dir}, is_dir: {eval_log_dir.is_dir()}, contents: {os.listdir(eval_log_dir)}")
+    eval_npz = eval_log_dir / "evaluations.npz"
+    if eval_npz.exists():
+        try:
+            eval_npz.unlink()
+            print(f"[DEBUG] Deleted existing {eval_npz}")
+        except Exception as e:
+            print(f"[DEBUG] Could not delete {eval_npz}: {e}")
+
     eval_callback = EvalCallback(
         eval_env,
         best_model_save_path=str(best_path),
-        log_path=str(OUTPUT_DIR / "ppo_eval_logs"),
+        log_path=str(eval_log_dir),
         eval_freq=1000,
         deterministic=True,
         callback_after_eval=stopper,
@@ -95,16 +111,39 @@ def train_ppo(total_timesteps: int = 100_000, action_scale: float = 0.05, *, exc
     default_kwargs.update(tuned)
 
     # Optionally override defaults via YAML file (highest priority)
+    if hparam_file is None:
+        default_best_params = OUTPUT_DIR / "best_ppo_params.json"
+        if default_best_params.exists():
+            hparam_file = str(default_best_params)
+            print(f"[INFO] Using best PPO params from {hparam_file}")
+
     if hparam_file:
         try:
             with open(hparam_file, "r", encoding="utf-8") as fh:
                 yaml_params: dict = yaml.safe_load(fh) or {}
+                # Remove keys not accepted by PPO
+                yaml_params.pop("rollouts", None)
                 default_kwargs.update(yaml_params)
         except Exception as exc:  # pragma: no cover
             print(f"[WARN] Could not read hparam_file {hparam_file}: {exc}")
 
     # Always train on CPU; GPU gives no speed-up for MLP policies.
     kwargs_extra = {"device": "cpu"}
+
+    # Auto-adjust batch_size to be a factor of n_steps * n_envs
+    n_envs = train_env.num_envs if hasattr(train_env, 'num_envs') else 1
+    n_steps = default_kwargs.get('n_steps', 2048)
+    rollout_buffer_size = n_steps * n_envs
+    batch_size = default_kwargs.get('batch_size', 64)
+    # Find largest factor <= batch_size
+    compatible_batch_size = batch_size
+    for i in range(batch_size, 0, -1):
+        if rollout_buffer_size % i == 0:
+            compatible_batch_size = i
+            break
+    if compatible_batch_size != batch_size:
+        print(f"[INFO] Adjusting batch_size from {batch_size} to {compatible_batch_size} so it divides n_steps * n_envs = {rollout_buffer_size}")
+        default_kwargs['batch_size'] = compatible_batch_size
 
     model = PPO(
         "MlpPolicy",

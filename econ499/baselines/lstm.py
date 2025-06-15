@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import json
 import random
+import os
 
 import numpy as np
 import pandas as pd
@@ -244,5 +245,13 @@ if __name__ == "__main__":
     p.add_argument("--out_csv", type=str, default=None, help="Override output csv path")
     p.add_argument("--seed", type=int, default=42, help="Global RNG seed for full reproducibility")
     args = p.parse_args()
+
+    # Automatically use best_lstm_params.json if --param_file is not provided and file exists
+    DEFAULT_BEST_PARAMS = Path(OUT_DIR) / "best_lstm_params.json"
+    param_file = args.param_file
+    if param_file is None and DEFAULT_BEST_PARAMS.exists():
+        param_file = str(DEFAULT_BEST_PARAMS)
+        print(f"[INFO] Using best LSTM params from {param_file}")
+
     _set_seed(args.seed)
-    run_lstm(out_csv=args.out_csv, param_file=args.param_file, seed=args.seed) 
+    run_lstm(out_csv=args.out_csv, param_file=param_file, seed=args.seed) 

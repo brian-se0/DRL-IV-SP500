@@ -29,3 +29,7 @@ arch==7.2.0
 matplotlib==3.8.4
 seaborn==0.13.2
 shap==0.44.1
+
+pandas_datareader
+
+pyarrow
