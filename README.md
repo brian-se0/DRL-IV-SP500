@@ -120,7 +120,7 @@ pytest
 Set the directory containing the OptionMetrics daily ZIP files in
 `cfg/data_config.yaml` under `paths.option_data_zip_dir`.
 You must also set `paths.vvix_csv` to the path of the VVIX history CSV.
-The data processing pipeline consists of the following scripts that must be run in this exact order:
+The data processing pipeline consists of the following scripts that must be run in this exact order. Each block can also be executed with a one-line PowerShell wrapper stored in `scripts/`:
 
 ```powershell
 # 1. Feature Building
@@ -130,18 +130,24 @@ python -m econ499.feats.build_iv_surface  # applies liquidity filters and gap in
 python -m econ499.feats.build_iv_fpca
 python -m econ499.feats.fetch_macro
 python -m econ499.panels.merge_features
+# Alternatively run all feature scripts at once
+powershell -File scripts/run_features.ps1
 
 # 2. Hyperparameter Optimization
 python -m econ499.hpo.hpo_lstm --trials 30
 python -m econ499.hpo.hpo_ppo --n-trials 30
 python -m econ499.hpo.hpo_a2c --n-trials 30
 python -m econ499.hpo.hpo_ffn --trials 30
+# Alternatively run all HPO scripts at once
+powershell -File scripts/run_hpo.ps1
 
 # 3. Model Training
 python -m econ499.baselines.lstm
 python -m econ499.baselines.ffn
 python -m econ499.models.ppo --timesteps 100000
 python -m econ499.models.a2c --timesteps 100000
+# Alternatively run all training scripts at once
+powershell -File scripts/run_training.ps1
 
 # Forecast multiple maturities (e.g. 30d and 90d)
 # Set ``features.surface.maturities`` in ``cfg/data_config.yaml`` to ``[30, 90]``
@@ -154,11 +160,19 @@ python -m econ499.baselines.har_rv
 python -m econ499.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.1
 python -m econ499.eval.make_ensemble results/lstm_oos_predictions.csv results/har_rv_oos_predictions.csv
 python -m econ499.eval.eval_vix_regimes --vix_thresh 20
+# Alternatively run the evaluation block at once
+powershell -File scripts/run_evaluation.ps1
 ```
 
 Note: Each script must be run in the order shown above to ensure all dependencies are available. Each script will save its outputs to the appropriate directories.
 
 ## Robustness Checks
+
+All robustness experiments can be executed individually as shown below or all at once via:
+
+```powershell
+powershell -File scripts/run_robustness.ps1
+```
 
 ### Feature Block Ablations
 ```powershell
@@ -169,6 +183,8 @@ python -m econ499.models.ppo --exclude_block macro
 
 # Generate forecasts with a clear output name and column suffix
 python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_no_macro.zip --exclude_block macro --out results/ppo_no_macro_oos_predictions.csv --suffix no_macro
+python -m econ499.models.a2c --exclude_block macro
+python -m econ499.forecast.make_drl_forecast --model results/a2c_best_model.zip --exclude_block macro --out results/a2c_no_macro_oos_predictions.csv --suffix no_macro
 ```
 
 ### Static-Arbitrage Penalty Sensitivity
@@ -178,12 +194,16 @@ python -m econ499.models.ppo --arb_lambda 0
 # The script will automatically copy the best model to a unique file, e.g.:
 #   results/ppo_best_model/ppo_best_model_arb0.zip
 python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_arb0.zip --arb_lambda 0 --out results/ppo_arb0_oos_predictions.csv --suffix arb0
+python -m econ499.models.a2c --arb_lambda 0
+python -m econ499.forecast.make_drl_forecast --model results/a2c_best_model_l0.zip --arb_lambda 0 --out results/a2c_arb0_oos_predictions.csv --suffix arb0
 
 # Train with strong penalty
 python -m econ499.models.ppo --arb_lambda 20
 # The script will automatically copy the best model to a unique file, e.g.:
 #   results/ppo_best_model/ppo_best_model_arb20.zip
 python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_arb20.zip --arb_lambda 20 --out results/ppo_arb20_oos_predictions.csv --suffix arb20
+python -m econ499.models.a2c --arb_lambda 20
+python -m econ499.forecast.make_drl_forecast --model results/a2c_best_model_l20.zip --arb_lambda 20 --out results/a2c_arb20_oos_predictions.csv --suffix arb20
 ```
 
 ### Alternative Sample Splits
@@ -199,6 +219,7 @@ python -m econ499.eval.eval_alt_splits --panel_csv results/spx_iv_drl_state.csv 
 ```powershell
 # After running multiple seeds and generating files like ppo_seed42_oos_predictions.csv, etc.
 python -m econ499.eval.eval_multi_seed --pattern "ppo_seed*_oos_predictions.csv" --panel_csv results/spx_iv_drl_state.csv --out artifacts/tables/seed_run_summary_ppo.csv
+python -m econ499.eval.eval_multi_seed --pattern "a2c_seed*_oos_predictions.csv" --panel_csv results/spx_iv_drl_state.csv --out artifacts/tables/seed_run_summary_a2c.csv
 ```
 
 ### Hyperparameter & Architecture Robustness
@@ -208,12 +229,16 @@ python -m econ499.models.ppo --hparam_file cfg/ppo_small.yaml
 # The script will automatically copy the best model to a unique file, e.g.:
 #   results/ppo_best_model/ppo_best_model_cfg_ppo_small.zip
 python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_cfg_ppo_small.zip --hparam_file cfg/ppo_small.yaml --out results/ppo_smallnet_oos_predictions.csv --suffix smallnet
+python -m econ499.models.a2c --hparam_file cfg/a2c_small.yaml
+python -m econ499.forecast.make_drl_forecast --model results/a2c_best_model_cfg_a2c_small.zip --hparam_file cfg/a2c_small.yaml --out results/a2c_smallnet_oos_predictions.csv --suffix smallnet
 
 # High learning rate
 python -m econ499.models.ppo --hparam_file cfg/ppo_lr_high.yaml
 # The script will automatically copy the best model to a unique file, e.g.:
 #   results/ppo_best_model/ppo_best_model_cfg_ppo_lr_high.zip
 python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_cfg_ppo_lr_high.zip --hparam_file cfg/ppo_lr_high.yaml --out results/ppo_lrhigh_oos_predictions.csv --suffix lrhigh
+python -m econ499.models.a2c --hparam_file cfg/a2c_lr_high.yaml
+python -m econ499.forecast.make_drl_forecast --model results/a2c_best_model_cfg_a2c_lr_high.zip --hparam_file cfg/a2c_lr_high.yaml --out results/a2c_lrhigh_oos_predictions.csv --suffix lrhigh
 ```
 
 ### Residual Diagnostics
