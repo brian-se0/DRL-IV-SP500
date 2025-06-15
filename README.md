@@ -125,7 +125,7 @@ The data processing pipeline consists of the following scripts that must be run 
 ```powershell
 # 1. Feature Building
 python -m econ499.feats.build_price
-python scripts/process_option_data.py  # extracts OptionMetrics zip files
+python -m scripts.process_option_data  # extracts OptionMetrics zip files
 python -m econ499.feats.build_iv_surface  # applies liquidity filters and gap interpolation
 python -m econ499.feats.build_iv_fpca
 python -m econ499.feats.fetch_macro
@@ -152,8 +152,7 @@ python -m econ499.models.a2c --timesteps 100000
 python -m econ499.eval.evaluate_all
 python -m econ499.baselines.har_rv
 python -m econ499.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.1
-python -m econ499.eval.make_ensemble results/lstm_oos_predictions.csv \
-       results/har_rv_oos_predictions.csv
+python -m econ499.eval.make_ensemble results/lstm_oos_predictions.csv results/har_rv_oos_predictions.csv
 python -m econ499.eval.eval_vix_regimes --vix_thresh 20
 ```
 
@@ -162,56 +161,73 @@ Note: Each script must be run in the order shown above to ensure all dependencie
 ## Robustness Checks
 
 ### Feature Block Ablations
-```bash
+```powershell
 # Train without macro features
 python -m econ499.models.ppo --exclude_block macro
+# The script will automatically copy the best model to a unique file, e.g.:
+#   results/ppo_best_model/ppo_best_model_no_macro.zip
 
-# Generate forecasts
-python -m econ499.forecast.make_drl_forecast --model ppo_best_model/best_model.zip --exclude_block macro
+# Generate forecasts with a clear output name and column suffix
+python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_no_macro.zip --exclude_block macro --out results/ppo_no_macro_oos_predictions.csv --suffix no_macro
 ```
 
 ### Static-Arbitrage Penalty Sensitivity
-```bash
-# Train with different penalty weights
-python -m econ499.models.ppo --arb_lambda 0  # No penalty
-python -m econ499.models.ppo --arb_lambda 20  # Strong penalty
+```powershell
+# Train with no penalty
+python -m econ499.models.ppo --arb_lambda 0
+# The script will automatically copy the best model to a unique file, e.g.:
+#   results/ppo_best_model/ppo_best_model_arb0.zip
+python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_arb0.zip --arb_lambda 0 --out results/ppo_arb0_oos_predictions.csv --suffix arb0
+
+# Train with strong penalty
+python -m econ499.models.ppo --arb_lambda 20
+# The script will automatically copy the best model to a unique file, e.g.:
+#   results/ppo_best_model/ppo_best_model_arb20.zip
+python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_arb20.zip --arb_lambda 20 --out results/ppo_arb20_oos_predictions.csv --suffix arb20
 ```
 
 ### Alternative Sample Splits
-```bash
-# Walk-forward evaluation
-python -m econ499.eval.eval_walk_forward
+```powershell
+# Walk-forward evaluation (output is always a new file)
+python -m econ499.eval.eval_walk_forward --panel_csv results/spx_iv_drl_state.csv --out artifacts/tables/forecast_metrics_walk.csv
 
-# Hold-out evaluation
-python -m econ499.eval.eval_alt_splits
+# Hold-out evaluation (output is always a new file)
+python -m econ499.eval.eval_alt_splits --panel_csv results/spx_iv_drl_state.csv --out artifacts/tables/forecast_metrics_alt_splits.csv
 ```
 
 ### Multi-Seed Experiments
-```bash
-python -m econ499.eval.eval_multi_seed --pattern "ppo_seed*_oos_predictions.csv"
+```powershell
+# After running multiple seeds and generating files like ppo_seed42_oos_predictions.csv, etc.
+python -m econ499.eval.eval_multi_seed --pattern "ppo_seed*_oos_predictions.csv" --panel_csv results/spx_iv_drl_state.csv --out artifacts/tables/seed_run_summary_ppo.csv
 ```
-This aggregates metrics across multiple random seeds to check stability.
 
 ### Hyperparameter & Architecture Robustness
-```bash
-# Train with a smaller network
+```powershell
+# Small network
 python -m econ499.models.ppo --hparam_file cfg/ppo_small.yaml
+# The script will automatically copy the best model to a unique file, e.g.:
+#   results/ppo_best_model/ppo_best_model_cfg_ppo_small.zip
+python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_cfg_ppo_small.zip --hparam_file cfg/ppo_small.yaml --out results/ppo_smallnet_oos_predictions.csv --suffix smallnet
 
-# Train with a larger learning rate
+# High learning rate
 python -m econ499.models.ppo --hparam_file cfg/ppo_lr_high.yaml
+# The script will automatically copy the best model to a unique file, e.g.:
+#   results/ppo_best_model/ppo_best_model_cfg_ppo_lr_high.zip
+python -m econ499.forecast.make_drl_forecast --model results/ppo_best_model/ppo_best_model_cfg_ppo_lr_high.zip --hparam_file cfg/ppo_lr_high.yaml --out results/ppo_lrhigh_oos_predictions.csv --suffix lrhigh
 ```
 
 ### Residual Diagnostics
-```bash
-python -m econ499.eval.residual_diagnostics --lags 5
+```powershell
+python -m econ499.eval.residual_diagnostics --lags 5 --panel_csv results/spx_iv_drl_state.csv --out artifacts/tables/forecast_residual_lb_lags5.csv
 ```
-Runs a Ljung-Box test on each model's forecast errors.
 
 ### Subsample Analysis
-```bash
-python -m econ499.eval.eval_subsamples --years 2010 2015 2020
+```powershell
+python -m econ499.eval.eval_subsamples --years 2010 2015 2020 --panel_csv results/spx_iv_drl_state.csv --out artifacts/tables/forecast_metrics_subsamples_2010_2015_2020.csv
 ```
-Computes forecast metrics over different market regimes.
+
+> **Note:**
+> The PPO training script now automatically copies the best model to a unique, descriptive filename after each run, based on your experiment parameters (such as --exclude_block, --arb_lambda, --hparam_file, --seed). You no longer need to manually rename or copy the model file after training. The script will print the path to the copied file. Use this path for downstream forecasting and evaluation steps.
 
 ## Directory Structure
 ```

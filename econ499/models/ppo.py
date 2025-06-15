@@ -154,7 +154,29 @@ def train_ppo(total_timesteps: int = 100_000, action_scale: float = 0.05, *, exc
         **kwargs_extra,
     )
     model.learn(total_timesteps=total_timesteps, callback=eval_callback)
-    return best_path.with_suffix(".zip")
+    best_model_zip = best_path.with_suffix(".zip")
+
+    # --- Automated renaming/copying logic ---
+    # Build a unique suffix based on experiment parameters
+    suffix_parts = []
+    if exclude_blocks:
+        suffix_parts.append("no_" + "_".join(sorted(exclude_blocks)))
+    if arb_lambda != 0.0:
+        suffix_parts.append(f"arb{int(arb_lambda)}")
+    if hparam_file:
+        suffix_parts.append(os.path.splitext(os.path.basename(hparam_file))[0])
+    if seed is not None:
+        suffix_parts.append(f"seed{seed}")
+    suffix = "_".join(suffix_parts) if suffix_parts else None
+
+    if suffix:
+        auto_name = best_model_zip.parent / f"ppo_best_model_{suffix}.zip"
+        import shutil
+        shutil.copy2(best_model_zip, auto_name)
+        print(f"[INFO] Copied best model to: {auto_name}")
+        return auto_name
+    else:
+        return best_model_zip
 
 
 if __name__ == "__main__":
