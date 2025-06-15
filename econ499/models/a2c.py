@@ -32,6 +32,7 @@ def train_a2c(total_timesteps: int = 50_000, action_scale: float = 0.05, *, excl
         train_df,
         valid_df,
         obs_cols=obs_cols,
+        maturities=CONFIG["features"]["surface"]["maturities"],
         action_scale_factor=action_scale,
         reward_type="mse",
         reward_scale=1000,

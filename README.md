@@ -67,7 +67,7 @@ The robustness of our results is assessed through:
 
 ### DRL Environment
 - **State Space**: 70+ engineered features from all feature blocks
-- **Action Space**: Continuous prediction of next-day ATM IV
+- **Action Space**: Vector of length ``n_maturities`` forecasting next-day ATM IV for each maturity
 - **Reward Function**: Negative MSE with static-arbitrage penalty
 - **Constraints**: No-arbitrage conditions enforced through penalty term
 
@@ -125,6 +125,11 @@ python -m econ499.hpo.hpo_a2c --n-trials 30
 python -m econ499.baselines.lstm
 python -m econ499.models.ppo --timesteps 100000
 python -m econ499.models.a2c --timesteps 100000
+
+# Forecast multiple maturities (e.g. 30d and 90d)
+# Set ``features.surface.maturities`` in ``cfg/data_config.yaml`` to ``[30, 90]``
+# and run the same training commands. The agent will output a vector forecast
+# with one prediction per maturity.
 
 # 4. Evaluation
 python -m econ499.eval.evaluate_all

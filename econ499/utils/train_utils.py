@@ -81,6 +81,7 @@ def create_envs(
     valid_df: pd.DataFrame,
     obs_cols: List[str],
     *,
+    maturities: List[int] | None = None,
     action_scale_factor: float = 0.1,
     reward_type: str = "mse",
     reward_scale: float = 1000.0,
@@ -89,9 +90,24 @@ def create_envs(
 ):
     """Return training and validation vectorised Gym environments."""
 
+    maturities = maturities or CONFIG["features"]["surface"].get("maturities", [30])
+    for m in maturities:
+        col = f"atm_iv_{m}d"
+        if col not in train_df.columns:
+            continue
+        train_df[f"iv_t_orig_{m}"] = train_df[col]
+        train_df[f"iv_t_plus1_{m}"] = train_df[col].shift(-1)
+        valid_df[f"iv_t_orig_{m}"] = valid_df[col]
+        valid_df[f"iv_t_plus1_{m}"] = valid_df[col].shift(-1)
+
+    drop_cols = [f"iv_t_plus1_{m}" for m in maturities if f"iv_t_plus1_{m}" in train_df.columns]
+    train_df.dropna(subset=drop_cols + obs_cols, inplace=True)
+    valid_df.dropna(subset=drop_cols + obs_cols, inplace=True)
+
     train_env = make_vec(
         train_df,
         obs_cols,
+        maturities=maturities,
         action_scale_factor=action_scale_factor,
         reward_type=reward_type,
         reward_scale=reward_scale,
@@ -101,6 +117,7 @@ def create_envs(
     valid_env = make_vec(
         valid_df,
         obs_cols,
+        maturities=maturities,
         action_scale_factor=action_scale_factor,
         reward_type=reward_type,
         reward_scale=reward_scale,
