@@ -3,6 +3,9 @@ import zipfile
 from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
+from econ499.utils import load_config
+
+CONFIG = load_config("data_config.yaml")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -64,10 +67,10 @@ def process_zip_file(zip_path: Path, output_dir: Path) -> bool:
 
 def main():
     # Input directory containing zip files
-    input_dir = Path("D:/Single-Equity Option Prices 2004_2021")
-    
+    input_dir = Path(CONFIG["paths"]["option_data_zip_dir"]).resolve()
+
     # Output directory for parquet files
-    output_dir = Path("results/parquet_yearly")
+    output_dir = Path(CONFIG["paths"]["output_dir"]).resolve() / "parquet_yearly"
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Get all zip files

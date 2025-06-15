@@ -58,7 +58,12 @@ def process_zip(zip_path: Path) -> pd.DataFrame:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Convert OptionMetrics daily zip CSVs to yearly Parquet files for SPX only.')
+    parser = argparse.ArgumentParser(
+        description=(
+            'Convert OptionMetrics daily zip CSVs to yearly Parquet files for SPX only. '
+            'The input directory is configured via paths.option_data_zip_dir.'
+        )
+    )
     parser.add_argument('--overwrite', action='store_true', help='Overwrite existing yearly parquet files')
     args = parser.parse_args()
 
