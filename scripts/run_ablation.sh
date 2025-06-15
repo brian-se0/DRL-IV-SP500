@@ -4,7 +4,9 @@ set -euo pipefail
 
 # Resolve absolute data_processed directory from YAML so paths work regardless of CWD
 DATA_DIR="$(python - <<PY
-import yaml, pathlib, sys; cfg=yaml.safe_load(open('data_config.yaml')); print(pathlib.Path(cfg['paths']['output_dir']).resolve())
+import yaml, pathlib, sys
+cfg = yaml.safe_load(open('cfg/data_config.yaml'))
+print(pathlib.Path(cfg['paths']['output_dir']).resolve())
 PY)"
 
 BLOCKS=(surface realised macro)

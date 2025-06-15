@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 CONFIG = load_config("data_config.yaml")
 
 ROOT = Path(__file__).resolve().parents[1]
-CFG = yaml.safe_load(open(ROOT / 'data_config.yaml'))
+CFG = yaml.safe_load(open(ROOT / 'cfg' / 'data_config.yaml'))
 DATA_DIR = Path(CFG['paths']['output_dir']).resolve()
 CONF_DIR = ROOT / 'configs'
 CONF_DIR.mkdir(exist_ok=True)

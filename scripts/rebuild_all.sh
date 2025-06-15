@@ -30,7 +30,9 @@ python -m econ499.tune.hpo_a2c --n-trials 30 | cat
 # ------------------- baselines -------------------
 
 DATA_DIR="$(python - <<PY
-import yaml, pathlib, json, sys; cfg=yaml.safe_load(open('data_config.yaml')); print(pathlib.Path(cfg['paths']['output_dir']).resolve())
+import yaml, pathlib, json, sys
+cfg = yaml.safe_load(open('cfg/data_config.yaml'))
+print(pathlib.Path(cfg['paths']['output_dir']).resolve())
 PY)"
 
 echo "[6/6]  Training / running baselines"
