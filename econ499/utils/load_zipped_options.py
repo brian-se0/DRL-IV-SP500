@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import pandas as pd
 import zipfile
-from iv_drl.utils import load_config
+from econ499.utils import load_config
 import logging
 from datetime import datetime
 from collections import defaultdict
