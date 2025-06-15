@@ -5,19 +5,19 @@
 set -euo pipefail
 
 echo "[1/6]  Building SPX price features"
-python build_spx_price_features.py | cat
+python -m econ499.feats.build_price | cat
 
 echo "[2/6]  Building IV-surface statistics"
-python build_iv_surface_features.py | cat
+python -m econ499.feats.build_iv_surface | cat
 
 echo "[3/6]  Building IV FPCA factors"
-python build_iv_fpca_factors.py | cat
+python -m econ499.feats.build_iv_fpca | cat
 
 echo "[4/6]  Building macro features"
-python fetch_macro_series.py | cat
+python -m econ499.feats.fetch_macro | cat
 
 echo "[5/6]  Merging feature sets"
-python merge_feature_sets.py | cat
+python -m econ499.panels.merge_features | cat
 
 # ------------------- hyper-parameter tuning -------------------
 
