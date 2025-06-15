@@ -19,20 +19,20 @@ MODEL_A2C="$MODEL_A2C_DIR/best_model.zip"
 
 for block in "${BLOCKS[@]}"; do
   echo "[ABLATION] Training PPO without block: $block"
-  python -m econ499.agents.ppo --timesteps "$TIMESTEPS" --exclude_block "$block" --arb_lambda 10 | cat
+  python -m econ499.models.ppo --timesteps "$TIMESTEPS" --exclude_block "$block" --arb_lambda 10 | cat
 
   echo "[ABLATION] Saving PPO forecasts"
-  python -m econ499.predict.make_drl_forecast \
+  python -m econ499.forecast.make_drl_forecast \
          --model "$MODEL_PPO" \
          --exclude_block "$block" \
          --out    "$DATA_DIR/ppo_${block}_oos_predictions.csv" \
          | cat
 
   echo "[ABLATION] Training A2C without block: $block"
-  python -m econ499.agents.a2c --timesteps "$TIMESTEPS" --exclude_block "$block" --arb_lambda 10 | cat
+  python -m econ499.models.a2c --timesteps "$TIMESTEPS" --exclude_block "$block" --arb_lambda 10 | cat
 
   echo "[ABLATION] Saving A2C forecasts"
-  python -m econ499.predict.make_drl_forecast \
+  python -m econ499.forecast.make_drl_forecast \
          --model "$MODEL_A2C" \
          --exclude_block "$block" \
          --out    "$DATA_DIR/a2c_${block}_oos_predictions.csv" \
