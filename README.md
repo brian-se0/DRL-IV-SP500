@@ -130,6 +130,9 @@ python -m econ499.models.a2c --timesteps 100000
 python -m econ499.eval.evaluate_all
 python -m econ499.baselines.har_rv
 python -m econ499.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.1
+python -m econ499.eval.make_ensemble results/lstm_oos_predictions.csv \
+       results/har_rv_oos_predictions.csv
+python -m econ499.eval.eval_vix_regimes --vix_thresh 20
 ```
 
 Note: Each script must be run in the order shown above to ensure all dependencies are available. Each script will save its outputs to the appropriate directories.
