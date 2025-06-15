@@ -137,26 +137,26 @@ Note: Each script must be run in the order shown above to ensure all dependencie
 ### Feature Block Ablations
 ```bash
 # Train without macro features
-python -m iv_drl.models.ppo --exclude_block macro
+python -m econ499.models.ppo --exclude_block macro
 
 # Generate forecasts
-python -m iv_drl.forecast.make_drl_forecast --model ppo_best_model/best_model.zip --exclude_block macro
+python -m econ499.forecast.make_drl_forecast --model ppo_best_model/best_model.zip --exclude_block macro
 ```
 
 ### Static-Arbitrage Penalty Sensitivity
 ```bash
 # Train with different penalty weights
-python -m iv_drl.models.ppo --lambda 0  # No penalty
-python -m iv_drl.models.ppo --lambda 20  # Strong penalty
+python -m econ499.models.ppo --lambda 0  # No penalty
+python -m econ499.models.ppo --lambda 20  # Strong penalty
 ```
 
 ### Alternative Sample Splits
 ```bash
 # Walk-forward evaluation
-python -m iv_drl.eval.eval_walk_forward
+python -m econ499.eval.eval_walk_forward
 
 # Hold-out evaluation
-python -m iv_drl.eval.eval_alt_splits
+python -m econ499.eval.eval_alt_splits
 ```
 
 ## Directory Structure
