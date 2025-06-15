@@ -186,6 +186,33 @@ python -m econ499.eval.eval_walk_forward
 python -m econ499.eval.eval_alt_splits
 ```
 
+### Multi-Seed Experiments
+```bash
+python -m econ499.eval.eval_multi_seed --pattern "ppo_seed*_oos_predictions.csv"
+```
+This aggregates metrics across multiple random seeds to check stability.
+
+### Hyperparameter & Architecture Robustness
+```bash
+# Train with a smaller network
+python -m econ499.models.ppo --hparam_file cfg/ppo_small.yaml
+
+# Train with a larger learning rate
+python -m econ499.models.ppo --hparam_file cfg/ppo_lr_high.yaml
+```
+
+### Residual Diagnostics
+```bash
+python -m econ499.eval.residual_diagnostics --lags 5
+```
+Runs a Ljung-Box test on each model's forecast errors.
+
+### Subsample Analysis
+```bash
+python -m econ499.eval.eval_subsamples --years 2010 2015 2020
+```
+Computes forecast metrics over different market regimes.
+
 ## Directory Structure
 ```
 econ499/

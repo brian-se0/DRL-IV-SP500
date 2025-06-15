@@ -1,0 +1,2 @@
+policy_kwargs:
+  net_arch: [32, 32]
