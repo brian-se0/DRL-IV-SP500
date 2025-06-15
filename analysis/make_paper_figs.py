@@ -38,7 +38,7 @@ import yaml
 # ---------------------------------------------------------------------
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 METRIC_CSV = PROJECT_ROOT / "artifacts" / "tables" / "forecast_metrics.csv"
-CFG = yaml.safe_load((PROJECT_ROOT / "data_config.yaml").read_text())
+CFG = yaml.safe_load((PROJECT_ROOT / "cfg" / "data_config.yaml").read_text())
 STATE_CSV = (PROJECT_ROOT / CFG["paths"]["drl_state_file"]).resolve()
 FORECAST_DIR = (PROJECT_ROOT / CFG["paths"]["output_dir"]).resolve()
 OUT_DIR = PROJECT_ROOT / "artifacts" / "paper_figs"
