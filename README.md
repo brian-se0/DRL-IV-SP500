@@ -105,6 +105,7 @@ pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.3.0+cu12
 ### Data Processing Pipeline
 Set the directory containing the OptionMetrics daily ZIP files in
 `cfg/data_config.yaml` under `paths.option_data_zip_dir`.
+You must also set `paths.vvix_csv` to the path of the VVIX history CSV.
 The data processing pipeline consists of the following scripts that must be run in this exact order:
 
 ```powershell
