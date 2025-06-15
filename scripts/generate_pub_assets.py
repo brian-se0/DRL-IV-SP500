@@ -22,8 +22,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from iv_drl.evaluation.evaluate_all import evaluate_all
-from iv_drl.evaluation.plot_diagnostics import plot_all
+from econ499.eval.evaluate_all import evaluate_all
+from econ499.eval.plot_diagnostics import plot_all
 
 # -----------------------------------------------------------------------------
 # 1. LaTeX table

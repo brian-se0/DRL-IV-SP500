@@ -161,7 +161,7 @@ def run_lstm(*, out_csv: str | Path | None = None, param_file: str | None = None
     # ------------------------------------------------------------------
     n_total = len(X_seq)
     train_end = int(TRAIN_RATIO * n_total)
-    oos_X, oos_y, oos_dates = X_seq[train_end:], y_seq[train_end:], dates_seq[train_end:]
+    oos_X, _, oos_dates = X_seq[train_end:], y_seq[train_end:], dates_seq[train_end:]
 
     train_X_full, train_y_full = X_seq[:train_end], y_seq[:train_end]
     # further split train into train/val

@@ -39,6 +39,6 @@ for block in "${BLOCKS[@]}"; do
 done
 
 # Aggregate metrics for ablation runs (including new forecasts)
-python -m econ499.evaluation.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.10 | cat
+python -m econ499.eval.evaluate_all --dm_base har_rv --mcs --mcs_alpha 0.10 | cat
 
 echo "Ablation study complete. Updated metrics available at artifacts/tables/forecast_metrics.csv" 
