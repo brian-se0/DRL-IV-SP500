@@ -1,4 +1,4 @@
-from iv_drl.orchestration.run_pipeline import run_pipeline as main
+from econ499.orchestrate.run_pipeline import run_pipeline as main
 
 if __name__ == "__main__":
     import argparse
