@@ -2,7 +2,7 @@
 
 Usage (from repo root):
 
-    python -m econ499.predict.make_drl_forecast \
+    python -m econ499.forecast.make_drl_forecast \
            --model data_processed/ppo_best_model.zip \
            --out   data_processed/ppo_oos_predictions.csv
 
