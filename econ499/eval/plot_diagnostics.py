@@ -8,8 +8,8 @@ import pandas as pd
 import seaborn as sns
 from scipy import stats
 
-from iv_drl.utils import load_config
-from iv_drl.utils.metrics_utils import rmse
+from econ499.utils import load_config
+from econ499.utils.metrics_utils import rmse
 
 CFG = load_config("data_config.yaml")
 ROOT = Path(__file__).resolve().parents[2]
