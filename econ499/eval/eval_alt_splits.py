@@ -8,7 +8,7 @@ import pandas as pd
 
 from iv_drl.utils import load_config
 from iv_drl.utils.metrics_utils import rmse, mae
-from iv_drl.evaluation.evaluate_all import _load_predictions, _mape, _qlike
+from econ499.eval.utils import _load_predictions, _mape, _qlike
 
 CFG = load_config("data_config.yaml")
 ROOT = Path(__file__).resolve().parents[2]
