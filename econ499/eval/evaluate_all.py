@@ -1,6 +1,8 @@
-"""Aggregate forecasts and compute error metrics.
+"""Aggregate forecasts and compute error metrics for all baseline models.
 
-Replaces old *src/evaluate_forecasts.py*.
+Replaces the old ``src/evaluate_forecasts.py`` script.  Any ``*_oos_predictions.csv``
+file in the results directory will be picked up automatically, including the
+new feed‑forward network (FFN) baseline.
 """
 from __future__ import annotations
 

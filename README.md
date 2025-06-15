@@ -79,12 +79,18 @@ The robustness of our results is assessed through:
 
 2. **Machine Learning**
    - LSTM
+   - FFN (feed-forward network)
    - Ridge Regression
    - OLS
 
 3. **Simple Benchmarks**
    - Naive (today's IV)
    - Rolling mean
+
+To train the FFN baseline and save forecasts:
+```bash
+python -m econ499.baselines.ffn
+```
 
 ## Implementation
 
@@ -124,6 +130,7 @@ python -m econ499.hpo.hpo_a2c --n-trials 30
 
 # 3. Model Training
 python -m econ499.baselines.lstm
+python -m econ499.baselines.ffn
 python -m econ499.models.ppo --timesteps 100000
 python -m econ499.models.a2c --timesteps 100000
 
