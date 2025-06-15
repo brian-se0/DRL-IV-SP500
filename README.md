@@ -135,6 +135,7 @@ python -m econ499.panels.merge_features
 python -m econ499.hpo.hpo_lstm --trials 30
 python -m econ499.hpo.hpo_ppo --n-trials 30
 python -m econ499.hpo.hpo_a2c --n-trials 30
+python -m econ499.hpo.hpo_ffn --trials 30
 
 # 3. Model Training
 python -m econ499.baselines.lstm
